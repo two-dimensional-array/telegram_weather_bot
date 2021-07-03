@@ -11,10 +11,13 @@ user_id = []
 place_list = []
 help_msg = "Hey!!!\nКоманды:\n/place - Ввод названия города. \n/update - Обновление информации об погоде в текущем городе \n/current_place - Вывод текущего города. \n/help - Вывод справки по командам бота"
 
+keyboard = telebot.types.ReplyKeyboardMarkup(True, True)
+keyboard.row('/place', '/update','/current_place','/help')
+
 @bot.message_handler(commands=['start'])
 def start_message(message):
     set_user(message.chat.id)
-    bot.send_message(message.chat.id, help_msg)
+    bot.send_message(message.chat.id, help_msg,reply_markup=keyboard)
 
 @bot.message_handler(commands=['place'])
 def get_message(message):
@@ -37,7 +40,7 @@ def update(message):
         bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
         return
-    bot.send_message(message.chat.id, output_data(place))
+    bot.send_message(message.chat.id, output_data(place),reply_markup=keyboard)
 
 def ask_place(message):
     place = message.text
@@ -55,17 +58,17 @@ def ask_place(message):
         return
     index = find_user(message.chat.id)
     place_list.insert(index, place)
-    bot.send_message(message.chat.id, output_data(place))
+    bot.send_message(message.chat.id, output_data(place),reply_markup=keyboard)
 
 @bot.message_handler(commands=['help'])
 def help_message(message):
-    bot.send_message(message.chat.id, help_msg)
+    bot.send_message(message.chat.id, help_msg,reply_markup=keyboard)
 
 @bot.message_handler(commands=['current_place'])
 def current_place(message):
     index = find_user(message.chat.id)
     place = place_list[index]
-    bot.send_message(message.chat.id, place)
+    bot.send_message(message.chat.id, place,reply_markup=keyboard)
 
 def set_user(user_name):
     user_id.append(user_name)
