@@ -1,5 +1,6 @@
 import telebot
 import pyowm
+import json
 
 telegram_key = "xxx"
 weather_key = "xxx"
@@ -7,8 +8,6 @@ weather_key = "xxx"
 bot = telebot.TeleBot(telegram_key)
 owm = pyowm.OWM(weather_key)
 mgr = owm.weather_manager()
-user_id = []
-place_list = []
 help_msg = "Команды:\n/place - Ввод названия города. \n/update - Обновление информации об погоде в текущем городе \n/current_place - Вывод текущего города. \n/help - Вывод справки по командам бота"
 
 keyboard = telebot.types.ReplyKeyboardMarkup(True, True)
@@ -16,7 +15,7 @@ keyboard.row('/place', '/update','/current_place','/help')
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    set_user(message.chat.id)
+    init_user(message.chat.id)
     bot.send_message(message.chat.id, "Здравствуйте " + str(message.chat.username) + " !\nВас приветсвует телеграм бот созданый творцом two-dimensional-array\nДля отображения списка комманд введите /help",reply_markup=keyboard)
 
 @bot.message_handler(commands=['place'])
@@ -26,8 +25,7 @@ def get_message(message):
 
 @bot.message_handler(commands=['update'])
 def update(message):
-    index = find_user(message.chat.id)
-    place = place_list[index]
+    place = find_user(message.chat.id)
     if place == None or len(place) > 20:
         place = "Город не найден"
     try:
@@ -56,8 +54,7 @@ def ask_place(message):
         bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
         return
-    index = find_user(message.chat.id)
-    place_list.insert(index, place)
+    set_user(message.chat.id,place)
     bot.send_message(message.chat.id, output_data(place),reply_markup=keyboard)
 
 @bot.message_handler(commands=['help'])
@@ -66,21 +63,42 @@ def help_message(message):
 
 @bot.message_handler(commands=['current_place'])
 def current_place(message):
-    index = find_user(message.chat.id)
-    place = place_list[index]
+    place = find_user(message.chat.id)
     bot.send_message(message.chat.id, place,reply_markup=keyboard)
 
-def set_user(user_name):
-    user_id.append(user_name)
-    place_list.append("Город не задан")
+def init_user(user_id):
+    user_is_find = False
+    with open("users.json", "r+", encoding="utf-8") as json_file:
+        database = json.load(json_file)
+        for item in database["users"]:
+            if item["id"] == user_id:
+                user_is_find = True
+        if user_is_find:
+            item = {
+                "id": int(user_id),
+                "geolocation": None
+            }
+            database["users"].append(item)
+            json_file.seek(0)
+            json.dump(database,json_file,indent=4, ensure_ascii=False)
+    json_file.close()
 
-def find_user(user_name):
-    try:
-        user_id.index(user_name)
-    except ValueError:
-        set_user(user_name)
-    index = user_id.index(user_name)
-    return index
+def find_user(user_id):
+    with open("users.json", "r+", encoding="utf-8") as json_file:
+        database = json.load(json_file)
+        for item in database["users"]:
+            if item["id"] == int(user_id):
+                return item["geolocation"] if item["geolocation"] != None else "Город не задан"
+
+def set_user(user_id,place):
+    with open("users.json", "r+", encoding="utf-8") as json_file:
+        database = json.load(json_file)
+        for item in database["users"]:
+            if item["id"] == int(user_id):
+                item["geolocation"] = place
+                json_file.seek(0)
+                json.dump(database,json_file,indent=4, ensure_ascii=False)
+    json_file.close()
 
 def output_data(place):
     observation = mgr.weather_at_place(place)
