@@ -13,9 +13,58 @@ help_msg = "Команды:\n/place - Ввод названия города. \n
 keyboard = telebot.types.ReplyKeyboardMarkup(True, True)
 keyboard.row('/place', '/update','/current_place','/help')
 
+class JSON_Database:
+    def __init__(self, path):
+        self.path = path
+        with open(self.path, "w+", encoding="utf-8") as json_file:
+            self.database = json.load(json_file)
+            json_file.close()
+
+    def user_is_find(self,user_id):
+        for item in self.database["users"]:
+            if item["id"] == user_id:
+                return True
+        return False
+        
+    def init_user(self,user_id):
+        if not self.user_is_find(user_id):
+            with open(self.path, "w", encoding="utf-8") as json_file:
+                item = {
+                    "id": int(user_id),
+                    "geolocation": None
+                }
+                self.database["users"].append(item)
+                json.dump(self.database,json_file,indent=4, ensure_ascii=False)
+            json_file.close()
+        else: pass
+
+    def set_geolocation(self,user_id,geolocation):
+        with open(self.path, "w", encoding="utf-8") as json_file:
+            for item in self.database["users"]:
+                if item["id"] == int(user_id):
+                    item["geolocation"] = geolocation
+                    json.dump(self.database,json_file,indent=4, ensure_ascii=False)
+                    break
+                else: pass
+        json_file.close()
+
+    def get_geolocation(self,user_id):
+        for item in self.database["users"]:
+            if item["id"] == int(user_id):
+                return item["geolocation"] if item["geolocation"] != None else "Город не задан"
+
+    def update_database(self):
+        with open(self.path, "r+", encoding="utf-8") as json_file:
+            if self.database != json.load(json_file):
+                json.dump(self.database,json_file,indent=4, ensure_ascii=False)
+            else: pass
+        json_file.close()
+
+db = JSON_Database("users.json")
+
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    init_user(message.chat.id)
+    db.init_user(message.chat.id)
     bot.send_message(message.chat.id, "Здравствуйте " + str(message.chat.username) + " !\nВас приветсвует телеграм бот созданый творцом two-dimensional-array\nДля отображения списка комманд введите /help",reply_markup=keyboard)
 
 @bot.message_handler(commands=['place'])
@@ -25,7 +74,7 @@ def get_message(message):
 
 @bot.message_handler(commands=['update'])
 def update(message):
-    place = find_user(message.chat.id)
+    place = db.get_geolocation(message.chat.id)
     if place == None or len(place) > 20:
         place = "Город не найден"
     try:
@@ -38,7 +87,7 @@ def update(message):
         bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
         return
-    bot.send_message(message.chat.id, output_data(place),reply_markup=keyboard)
+    bot.send_message(message.chat.id, output_data(place), reply_markup=keyboard)
 
 def ask_place(message):
     place = message.text
@@ -54,7 +103,7 @@ def ask_place(message):
         bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
         return
-    set_user(message.chat.id,place)
+    db.set_geolocation(message.chat.id, place)
     bot.send_message(message.chat.id, output_data(place),reply_markup=keyboard)
 
 @bot.message_handler(commands=['help'])
@@ -63,59 +112,7 @@ def help_message(message):
 
 @bot.message_handler(commands=['current_place'])
 def current_place(message):
-    place = find_user(message.chat.id)
-    bot.send_message(message.chat.id, place,reply_markup=keyboard)
-
-def init_user(user_id):
-    user_is_find = False
-    with open("users.json", "r+", encoding="utf-8") as json_file:
-        database = json.load(json_file)
-        for item in database["users"]:
-            if item["id"] == user_id:
-                user_is_find = True
-        if not user_is_find:
-            item = {
-                "id": int(user_id),
-                "geolocation": None
-            }
-            database["users"].append(item)
-            json_file.seek(0)
-            json.dump(database,json_file,indent=4, ensure_ascii=False)
-    json_file.close()
-
-def find_user(user_id):
-    with open("users.json", "r+", encoding="utf-8") as json_file:
-        database = json.load(json_file)
-        for item in database["users"]:
-            if item["id"] == int(user_id):
-                return item["geolocation"] if item["geolocation"] != None else "Город не задан"
-        item = {
-            "id": int(user_id),
-            "geolocation": None
-            }
-        database["users"].append(item)
-        json_file.seek(0)
-        json.dump(database,json_file,indent=4, ensure_ascii=False)
-    json_file.close()
-    return "Город не задан"
-
-def set_user(user_id,place):
-    user_is_find = False
-    with open("users.json", "r+", encoding="utf-8") as json_file:
-        database = json.load(json_file)
-        for item in database["users"]:
-            if item["id"] == int(user_id):
-                item["geolocation"] = place
-                user_is_find = True
-        if not user_is_find:
-            item = {
-                "id": int(user_id),
-                "geolocation": None
-            }
-            database["users"].append(item)
-        json_file.seek(0)
-        json.dump(database,json_file,indent=4, ensure_ascii=False)
-    json_file.close()
+    bot.send_message(message.chat.id, db.get_geolocation(message.chat.id), reply_markup=keyboard)
 
 def output_data(place):
     observation = mgr.weather_at_place(place)
