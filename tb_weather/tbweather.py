@@ -73,7 +73,7 @@ def init_user(user_id):
         for item in database["users"]:
             if item["id"] == user_id:
                 user_is_find = True
-        if user_is_find:
+        if not user_is_find:
             item = {
                 "id": int(user_id),
                 "geolocation": None
@@ -89,15 +89,32 @@ def find_user(user_id):
         for item in database["users"]:
             if item["id"] == int(user_id):
                 return item["geolocation"] if item["geolocation"] != None else "Город не задан"
+        item = {
+            "id": int(user_id),
+            "geolocation": None
+            }
+        database["users"].append(item)
+        json_file.seek(0)
+        json.dump(database,json_file,indent=4, ensure_ascii=False)
+    json_file.close()
+    return "Город не задан"
 
 def set_user(user_id,place):
+    user_is_find = False
     with open("users.json", "r+", encoding="utf-8") as json_file:
         database = json.load(json_file)
         for item in database["users"]:
             if item["id"] == int(user_id):
                 item["geolocation"] = place
-                json_file.seek(0)
-                json.dump(database,json_file,indent=4, ensure_ascii=False)
+                user_is_find = True
+        if not user_is_find:
+            item = {
+                "id": int(user_id),
+                "geolocation": None
+            }
+            database["users"].append(item)
+        json_file.seek(0)
+        json.dump(database,json_file,indent=4, ensure_ascii=False)
     json_file.close()
 
 def output_data(place):
