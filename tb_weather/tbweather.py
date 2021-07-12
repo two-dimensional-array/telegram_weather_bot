@@ -22,7 +22,6 @@ class JSON_Database:
             else:
                 self.database = {'users': []}
                 json.dump(self.database,json_file,indent=4, ensure_ascii=False)
-            json_file.close()
 
     def user_is_find(self,user_id):
         for item in self.database["users"]:
@@ -39,10 +38,10 @@ class JSON_Database:
                 }
                 self.database["users"].append(item)
                 json.dump(self.database,json_file,indent=4, ensure_ascii=False)
-            json_file.close()
         else: pass
 
     def set_geolocation(self,user_id,geolocation):
+        self.init_user(user_id)
         with open(self.path, "w", encoding="utf-8") as json_file:
             for item in self.database["users"]:
                 if item["id"] == int(user_id):
@@ -50,9 +49,9 @@ class JSON_Database:
                     json.dump(self.database,json_file,indent=4, ensure_ascii=False)
                     break
                 else: pass
-        json_file.close()
 
     def get_geolocation(self,user_id):
+        self.init_user(user_id)
         for item in self.database["users"]:
             if item["id"] == int(user_id):
                 return item["geolocation"] if item["geolocation"] != None else "Город не задан"
@@ -62,7 +61,6 @@ class JSON_Database:
             if self.database != json.load(json_file):
                 json.dump(self.database,json_file,indent=4, ensure_ascii=False)
             else: pass
-        json_file.close()
 
 db = JSON_Database()
 
