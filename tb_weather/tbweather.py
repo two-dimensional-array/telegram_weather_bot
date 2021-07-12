@@ -17,7 +17,11 @@ class JSON_Database:
     def __init__(self, path = "users.json"):
         self.path = path
         with open(self.path, "w+", encoding="utf-8") as json_file:
-            self.database = json.load(json_file)
+            if json_file.read():
+                self.database = json.load(json_file)
+            else:
+                self.database = {'users': []}
+                json.dump(self.database,json_file,indent=4, ensure_ascii=False)
             json_file.close()
 
     def user_is_find(self,user_id):
