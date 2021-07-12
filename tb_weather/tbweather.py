@@ -14,7 +14,7 @@ keyboard = telebot.types.ReplyKeyboardMarkup(True, True)
 keyboard.row('/place', '/update','/current_place','/help')
 
 class JSON_Database:
-    def __init__(self, path):
+    def __init__(self, path = "users.json"):
         self.path = path
         with open(self.path, "w+", encoding="utf-8") as json_file:
             self.database = json.load(json_file)
@@ -60,7 +60,7 @@ class JSON_Database:
             else: pass
         json_file.close()
 
-db = JSON_Database("users.json")
+db = JSON_Database()
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
