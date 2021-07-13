@@ -56,13 +56,19 @@ class CSV:
     def __init__(self, path = "users.csv", delimiter = ";"):
         self.path = path
         self.delimiter = delimiter
-        self._csv_read()
+        self.database = self._csv_read()
 
     def _csv_read(self):
-        with open(self.path, "r+", encoding="utf-8") as file:
-            for user in file.readlines()[1:]:
+        database = []
+        try:
+            with open(self.path, "r+", encoding="utf-8") as file:
+                for user in file.readlines()[1:]:
                     item = user.split(self.delimiter)
-                    self.database.append({"id": int(item[0]), "geolocation": item[1]})
+                    database.append({"id": int(item[0]), "geolocation": item[1]})
+        except:
+            with open(self.path, "w+", encoding="utf-8") as file:
+                file.write("id;geolocation\n")
+        return database
 
     def _csv_append(self, item):
         with open(self.path, "a", encoding="utf-8") as file:
