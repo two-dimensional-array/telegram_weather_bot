@@ -104,3 +104,8 @@ class CSV:
         else:
             self._csv_append({"id": int(user_id), "geolocation": "Город не задан"})
             return "Город не задан"
+
+    def update_database(self):
+        if self.database != self._csv_read():
+            self.csv_write_all()
+        else: pass
