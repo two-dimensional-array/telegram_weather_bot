@@ -11,7 +11,7 @@ help_msg = "Команды:\n/place - Ввод названия города. \n
 keyboard = telebot.types.ReplyKeyboardMarkup(True, True)
 keyboard.row('/place', '/update','/current_place','/help')
 
-db = Database.CSV("users.csv",";")
+db = Database.CSV("users.csv")
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
