@@ -1,14 +1,15 @@
 import json
 
 class JSON:
-    def __init__(self, path = "users.json"):
+    def __init__(self, path = "users.json", indent = 4):
         self.path = path
+        self.indent = indent
         with open(self.path, "r+", encoding="utf-8") as json_file:
             try:
                 self.database = json.load(json_file)
             except:
                 self.database = {'users': []}
-                json.dump(self.database,json_file,indent=4, ensure_ascii=False)
+                json.dump(self.database, json_file, indent=self.indent, ensure_ascii=False)
 
     def user_is_find(self,user_id):
         for item in self.database["users"]:
@@ -20,7 +21,7 @@ class JSON:
         if self.user_is_find(user_id) == None:
             with open(self.path, "w", encoding="utf-8") as json_file:
                 self.database["users"].append({"id": int(user_id), "geolocation": None})
-                json.dump(self.database,json_file,indent=4, ensure_ascii=False)
+                json.dump(self.database, json_file, indent=self.indent, ensure_ascii=False)
         else: pass
 
     def set_geolocation(self,user_id,geolocation):
@@ -30,7 +31,7 @@ class JSON:
                 item["geolocation"] = geolocation
             else:
                 self.database["users"].append({"id": int(user_id), "geolocation": geolocation})
-            json.dump(self.database,json_file,indent=4, ensure_ascii=False)
+            json.dump(self.database, json_file, indent=self.indent, ensure_ascii=False)
 
     def get_geolocation(self,user_id):
         item = self.user_is_find(user_id)
@@ -39,11 +40,11 @@ class JSON:
         else:
             with open(self.path, "w", encoding="utf-8") as json_file:
                 self.database["users"].append({"id": int(user_id), "geolocation": None})
-                json.dump(self.database,json_file,indent=4, ensure_ascii=False)
+                json.dump(self.database, json_file, indent=self.indent, ensure_ascii=False)
             return "Город не задан"
 
     def update_database(self):
         with open(self.path, "r+", encoding="utf-8") as json_file:
             if self.database != json.load(json_file):
-                json.dump(self.database,json_file,indent=4, ensure_ascii=False)
+                json.dump(self.database, json_file, indent=self.indent, ensure_ascii=False)
             else: pass
