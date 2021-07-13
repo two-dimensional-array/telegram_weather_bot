@@ -1,6 +1,6 @@
 import json
 
-CSV_FILE_HEADER = "id;geolocation\n"
+CSV_FILE_HEADER = "id","geolocation"
 DEFAULT_GEOLOCATION = "Город не задан" 
 
 class JSON:
@@ -67,7 +67,7 @@ class CSV:
                     database.append({"id": int(item[0]), "geolocation": item[1]})
         except:
             with open(self.path, "w+", encoding="utf-8") as file:
-                file.write(CSV_FILE_HEADER)
+                file.write(CSV_FILE_HEADER[0]+self.delimiter+CSV_FILE_HEADER[1]+"\n")
         return database
 
     def _csv_append(self, item):
@@ -77,7 +77,7 @@ class CSV:
 
     def _csv_write_all(self):
         with open(self.path, "w+", encoding="utf-8") as file:
-            file.write(CSV_FILE_HEADER)
+            file.write(CSV_FILE_HEADER[0]+self.delimiter+CSV_FILE_HEADER[1]+"\n")
             for item in self.database:
                 file.write(str(item["id"])+self.delimiter+str(item["geolocation"])+"\n")
 
