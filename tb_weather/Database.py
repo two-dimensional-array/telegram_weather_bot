@@ -1,6 +1,6 @@
 import json
 
-CSV_FILE_HEADER = "id","geolocation"
+CSV_FILE_HEADER = "id;geolocation\n"
 DEFAULT_GEOLOCATION = "Город не задан" 
 
 class JSON:
@@ -67,7 +67,7 @@ class CSV:
                     database.append({"id": int(item[0]), "geolocation": item[1]})
         except:
             with open(self.path, "w+", encoding="utf-8") as file:
-                file.write("id;geolocation\n")
+                file.write(CSV_FILE_HEADER)
         return database
 
     def _csv_append(self, item):
@@ -77,7 +77,7 @@ class CSV:
 
     def _csv_write_all(self):
         with open(self.path, "w+", encoding="utf-8") as file:
-            file.write("id;geolocation\n")
+            file.write(CSV_FILE_HEADER)
             for item in self.database:
                 file.write(str(item["id"])+self.delimiter+str(item["geolocation"])+"\n")
 
@@ -89,7 +89,7 @@ class CSV:
         
     def init_user(self,user_id):
         if self.user_is_find(user_id) == None:
-            self._csv_append({"id": int(user_id), "geolocation": "Город не задан"})
+            self._csv_append({"id": int(user_id), "geolocation": DEFAULT_GEOLOCATION })
         else: pass
 
     def set_geolocation(self,user_id,geolocation):
@@ -105,8 +105,8 @@ class CSV:
         if item:
             return item["geolocation"]
         else:
-            self._csv_append({"id": int(user_id), "geolocation": "Город не задан"})
-            return "Город не задан"
+            self._csv_append({"id": int(user_id), "geolocation": DEFAULT_GEOLOCATION })
+            return DEFAULT_GEOLOCATION 
 
     def update_database(self):
         if self.database != self._csv_read():
