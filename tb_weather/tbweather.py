@@ -1,5 +1,6 @@
 import telebot
 import pyowm
+import Database
 
 telegram_key = "xxx"
 weather_key = "xxx"
@@ -7,16 +8,16 @@ weather_key = "xxx"
 bot = telebot.TeleBot(telegram_key)
 owm = pyowm.OWM(weather_key)
 mgr = owm.weather_manager()
-user_id = []
-place_list = []
 help_msg = "Команды:\n/place - Ввод названия города. \n/update - Обновление информации об погоде в текущем городе \n/current_place - Вывод текущего города. \n/help - Вывод справки по командам бота"
 
 keyboard = telebot.types.ReplyKeyboardMarkup(True, True)
 keyboard.row('/place', '/update','/current_place','/help')
 
+db = Database.CSV()
+
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    set_user(message.chat.id)
+    db.init_user(message.chat.id)
     bot.send_message(message.chat.id, "Здравствуйте " + str(message.chat.username) + " !\nВас приветсвует телеграм бот созданый творцом two-dimensional-array\nДля отображения списка комманд введите /help",reply_markup=keyboard)
 
 @bot.message_handler(commands=['place'])
@@ -26,8 +27,7 @@ def get_message(message):
 
 @bot.message_handler(commands=['update'])
 def update(message):
-    index = find_user(message.chat.id)
-    place = place_list[index]
+    place = db.get_geolocation(message.chat.id)
     if place == None or len(place) > 20:
         place = "Город не найден"
     try:
@@ -40,7 +40,7 @@ def update(message):
         bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
         return
-    bot.send_message(message.chat.id, output_data(place),reply_markup=keyboard)
+    bot.send_message(message.chat.id, output_data(place), reply_markup=keyboard)
 
 def ask_place(message):
     place = message.text
@@ -56,8 +56,7 @@ def ask_place(message):
         bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
         return
-    index = find_user(message.chat.id)
-    place_list.insert(index, place)
+    db.set_geolocation(message.chat.id, place)
     bot.send_message(message.chat.id, output_data(place),reply_markup=keyboard)
 
 @bot.message_handler(commands=['help'])
@@ -66,21 +65,7 @@ def help_message(message):
 
 @bot.message_handler(commands=['current_place'])
 def current_place(message):
-    index = find_user(message.chat.id)
-    place = place_list[index]
-    bot.send_message(message.chat.id, place,reply_markup=keyboard)
-
-def set_user(user_name):
-    user_id.append(user_name)
-    place_list.append("Город не задан")
-
-def find_user(user_name):
-    try:
-        user_id.index(user_name)
-    except ValueError:
-        set_user(user_name)
-    index = user_id.index(user_name)
-    return index
+    bot.send_message(message.chat.id, db.get_geolocation(message.chat.id), reply_markup=keyboard)
 
 def output_data(place):
     observation = mgr.weather_at_place(place)
