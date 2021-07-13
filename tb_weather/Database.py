@@ -53,7 +53,7 @@ class JSON:
             else: pass
 
 class CSV:
-    def __init__(self, path, delimiter = ";"):
+    def __init__(self, path = "users.csv", delimiter = ";"):
         self.path = path
         self.delimiter = delimiter
         self._csv_read()
