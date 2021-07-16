@@ -1,0 +1,4 @@
+### Python ###
+__pycache__/
+telegram_weather_bot/__pycache__/
+*.py[cod]
