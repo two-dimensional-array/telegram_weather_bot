@@ -1,0 +1,4 @@
+### Python ###
+__pycache__/
+tb_weather/__pycache__/
+*.py[cod]
