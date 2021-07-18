@@ -110,5 +110,5 @@ class CSV:
 
     def update_database(self):
         if self.database != self._csv_read():
-            self.csv_write_all()
+            self._csv_write_all()
         else: pass
