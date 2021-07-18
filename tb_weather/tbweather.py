@@ -1,9 +1,7 @@
 import telebot
 import pyowm
 import Database
-
-telegram_key = "xxx"
-weather_key = "xxx"
+from config import *
 
 bot = telebot.TeleBot(telegram_key)
 owm = pyowm.OWM(weather_key)
