@@ -6,3 +6,4 @@ tb_weather/__pycache__/
 tb_weather/config.py
 tb_weather/users.json
 tb_weather/users.csv
+tb_weather/users.yaml
