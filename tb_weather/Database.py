@@ -115,8 +115,9 @@ class CSV:
         else: pass
 
 class YAML:
-    def __init__(self, path):
+    def __init__(self, path, indent):
         self.path = path
+        self.indent = indent
         with open(self.path, "r+") as yaml_file:
             self.database = yaml.safe_load(yaml_file)
 
@@ -130,7 +131,7 @@ class YAML:
         if self.user_is_find(user_id) == None:
             with open(self.path, "w") as yaml_file:
                 self.database["users"].append({"id": int(user_id), "geolocation": None})
-                yaml.dump(self.database, yaml_file)
+                yaml.dump(self.database, yaml_file, indent=self.indent)
         else: pass
 
     def set_geolocation(self,user_id,geolocation):
@@ -140,7 +141,7 @@ class YAML:
                 item["geolocation"] = geolocation
             else:
                 self.database["users"].append({"id": int(user_id), "geolocation": geolocation})
-            yaml.dump(self.database, yaml_file)
+            yaml.dump(self.database, yaml_file, indent=self.indent)
 
     def get_geolocation(self,user_id):
         item = self.user_is_find(user_id)
@@ -149,11 +150,11 @@ class YAML:
         else:
             with open(self.path, "w") as yaml_file:
                 self.database["users"].append({"id": int(user_id), "geolocation": None})
-                yaml.dump(self.database, yaml_file)
+                yaml.dump(self.database, yaml_file, indent=self.indent)
             return DEFAULT_GEOLOCATION 
 
     def update_database(self):
         with open(self.path, "r+") as yaml_file:
             if self.database != yaml.safe_load(yaml_file):
-                yaml.dump(self.database, yaml_file)
+                yaml.dump(self.database, yaml_file, indent=self.indent)
             else: pass
