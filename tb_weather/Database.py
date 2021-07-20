@@ -118,8 +118,13 @@ class YAML:
     def __init__(self, path = "users.yaml", indent = 2):
         self.path = path
         self.indent = indent
-        with open(self.path, "r+") as yaml_file:
-            self.database = yaml.safe_load(yaml_file)
+        try:
+            with open(self.path, "r+") as yaml_file:
+                self.database = yaml.safe_load(yaml_file)
+        except:
+            with open(self.path, "w+") as yaml_file:
+                self.database = {'users': []}
+                yaml.dump(self.database, yaml_file, indent=self.indent)
 
     def user_is_find(self,user_id):
         for item in self.database["users"]:
