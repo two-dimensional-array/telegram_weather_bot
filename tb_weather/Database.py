@@ -1,4 +1,5 @@
 import json
+import yaml
 
 CSV_FILE_HEADER = "id","geolocation"
 DEFAULT_GEOLOCATION = "Город не задан" 
@@ -112,3 +113,47 @@ class CSV:
         if self.database != self._csv_read():
             self._csv_write_all()
         else: pass
+
+class YAML:
+    def __init__(self, path):
+        self.path = path
+        with open(self.path, "r+") as yaml_file:
+            self.database = yaml.safe_load(yaml_file)
+
+    def user_is_find(self,user_id):
+        for item in self.database["users"]:
+            if item["id"] == user_id:
+                return item
+        return None
+        
+    def init_user(self,user_id):
+        if self.user_is_find(user_id) == None:
+            with open(self.path, "w") as yaml_file:
+                self.database["users"].append({"id": int(user_id), "geolocation": None})
+                yaml.dump(self.database, yaml_file)
+        else: pass
+
+    def set_geolocation(self,user_id,geolocation):
+        item = self.user_is_find(user_id)
+        with open(self.path, "w") as yaml_file:
+            if item:
+                item["geolocation"] = geolocation
+            else:
+                self.database["users"].append({"id": int(user_id), "geolocation": geolocation})
+            yaml.dump(self.database, yaml_file)
+
+    def get_geolocation(self,user_id):
+        item = self.user_is_find(user_id)
+        if item:
+            return item["geolocation"]
+        else:
+            with open(self.path, "w") as yaml_file:
+                self.database["users"].append({"id": int(user_id), "geolocation": None})
+                yaml.dump(self.database, yaml_file)
+            return DEFAULT_GEOLOCATION 
+
+    def update_database(self):
+        with open(self.path, "r+") as yaml_file:
+            if self.database != yaml.safe_load(yaml_file):
+                yaml.dump(self.database, yaml_file)
+            else: pass
