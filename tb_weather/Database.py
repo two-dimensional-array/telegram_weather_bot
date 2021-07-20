@@ -115,7 +115,7 @@ class CSV:
         else: pass
 
 class YAML:
-    def __init__(self, path, indent = 2):
+    def __init__(self, path = "users.yaml", indent = 2):
         self.path = path
         self.indent = indent
         with open(self.path, "r+") as yaml_file:
