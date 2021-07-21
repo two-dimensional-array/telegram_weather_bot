@@ -1,5 +1,4 @@
 import json
-import yaml
 
 CSV_FILE_HEADER = "id","geolocation"
 DEFAULT_GEOLOCATION = "Город не задан" 
@@ -118,13 +117,21 @@ class YAML:
     def __init__(self, path = "users.yaml", indent = 2):
         self.path = path
         self.indent = indent
+        self.database = self._yaml_read()
+
+    def _yaml_read(self):
+        database = {'users': []}
         try:
-            with open(self.path, "r+", encoding="utf-8") as yaml_file:
-                self.database = yaml.safe_load(yaml_file)
+            with open(self.path, "r+", encoding="utf-8") as file:
+                text = file.readlines()
+                for count in range(1,len(text),2):
+                    id = int(text[count][self.indent:].split(" ")[1])
+                    geolocation = text[count+1][self.indent:].split(" ")[1]
+                    database["users"].append({"id": id, "geolocation": geolocation if geolocation != "null\n" else None})
         except:
-            with open(self.path, "w+", encoding="utf-8") as yaml_file:
-                self.database = {'users': []}
-                yaml_file.write("users: []\n")
+            with open(self.path, "w+", encoding="utf-8") as file:
+                file.write("users:\n")
+        return database
 
     def _yaml_append(self, item):
         with open(self.path, "a", encoding="utf-8") as file:
@@ -168,6 +175,6 @@ class YAML:
 
     def update_database(self):
         with open(self.path, "r+", encoding="utf-8") as yaml_file:
-            if self.database != yaml.safe_load(yaml_file):
+            if self.database != self._yaml_read():
                 self._yaml_write_all()
             else: pass
