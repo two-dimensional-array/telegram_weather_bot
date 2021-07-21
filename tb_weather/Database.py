@@ -131,7 +131,7 @@ class YAML:
             if item["id"] == user_id:
                 return item
         return None
-        
+
     def init_user(self,user_id):
         if self.user_is_find(user_id) == None:
             with open(self.path, "w", encoding="utf-8") as yaml_file:
@@ -151,7 +151,7 @@ class YAML:
     def get_geolocation(self,user_id):
         item = self.user_is_find(user_id)
         if item:
-            return item["geolocation"]
+            return item["geolocation"] if item["geolocation"] != None else DEFAULT_GEOLOCATION
         else:
             with open(self.path, "w", encoding="utf-8") as yaml_file:
                 self.database["users"].append({"id": int(user_id), "geolocation": None})
