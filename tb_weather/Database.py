@@ -124,7 +124,14 @@ class YAML:
         except:
             with open(self.path, "w+", encoding="utf-8") as yaml_file:
                 self.database = {'users': []}
-                yaml.dump(self.database, yaml_file, indent=self.indent, allow_unicode=True, encoding="utf-8")
+                yaml_file.write("users: []\n")
+
+    def _yaml_write_all(self):
+        with open(self.path, "w+", encoding="utf-8") as file:
+            file.write("users:\n")
+            for item in self.database["users"]:
+                file.write(f'-{" " * (self.indent-1)}id: {item["id"]}\n')
+                file.write(f'{" " * self.indent}geolocation: {item["geolocation"] if item["geolocation"] != None else "null"}\n')
 
     def user_is_find(self,user_id):
         for item in self.database["users"]:
@@ -134,19 +141,17 @@ class YAML:
 
     def init_user(self,user_id):
         if self.user_is_find(user_id) == None:
-            with open(self.path, "w", encoding="utf-8") as yaml_file:
-                self.database["users"].append({"id": int(user_id), "geolocation": None})
-                yaml.dump(self.database, yaml_file, indent=self.indent, allow_unicode=True, encoding="utf-8")
+            self.database["users"].append({"id": int(user_id), "geolocation": None})
+            self._yaml_write_all()
         else: pass
 
     def set_geolocation(self,user_id,geolocation):
         item = self.user_is_find(user_id)
-        with open(self.path, "w", encoding="utf-8") as yaml_file:
-            if item:
+        if item:
                 item["geolocation"] = geolocation
-            else:
-                self.database["users"].append({"id": int(user_id), "geolocation": geolocation})
-            yaml.dump(self.database, yaml_file, indent=self.indent, allow_unicode=True, encoding="utf-8")
+        else:
+            self.database["users"].append({"id": int(user_id), "geolocation": geolocation})
+        self._yaml_write_all()
 
     def get_geolocation(self,user_id):
         item = self.user_is_find(user_id)
@@ -155,11 +160,11 @@ class YAML:
         else:
             with open(self.path, "w", encoding="utf-8") as yaml_file:
                 self.database["users"].append({"id": int(user_id), "geolocation": None})
-                yaml.dump(self.database, yaml_file, indent=self.indent, allow_unicode=True, encoding="utf-8")
+                self._yaml_write_all()
             return DEFAULT_GEOLOCATION 
 
     def update_database(self):
         with open(self.path, "r+", encoding="utf-8") as yaml_file:
             if self.database != yaml.safe_load(yaml_file):
-                yaml.dump(self.database, yaml_file, indent=self.indent, allow_unicode=True, encoding="utf-8")
+                self._yaml_write_all()
             else: pass
