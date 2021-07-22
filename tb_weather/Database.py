@@ -119,6 +119,11 @@ class YAML:
         self.indent = indent
         self.database = self._yaml_read()
 
+    def __write_user_to_str(self, item):
+        user_data = f'-{" " * (self.indent-1)}id: {item["id"]}\n'
+        user_data += f'{" " * self.indent}geolocation: {item["geolocation"] if item["geolocation"] != None else "null"}\n'
+        return user_data
+
     def _yaml_read(self):
         database = {'users': []}
         try:
@@ -135,16 +140,14 @@ class YAML:
 
     def _yaml_append(self, item):
         with open(self.path, "a", encoding="utf-8") as file:
-            file.write(f'-{" " * (self.indent-1)}id: {item["id"]}\n')
-            file.write(f'{" " * self.indent}geolocation: {item["geolocation"] if item["geolocation"] != None else "null"}\n')
+            file.write(self.__write_user_to_str(item))
         self.database["users"].append(item)
 
     def _yaml_write_all(self):
         with open(self.path, "w+", encoding="utf-8") as file:
             file.write("users:\n")
             for item in self.database["users"]:
-                file.write(f'-{" " * (self.indent-1)}id: {item["id"]}\n')
-                file.write(f'{" " * self.indent}geolocation: {item["geolocation"] if item["geolocation"] != None else "null"}\n')
+                file.write(self.__write_user_to_str(item))
 
     def user_is_find(self,user_id):
         for item in self.database["users"]:
@@ -174,7 +177,6 @@ class YAML:
             return DEFAULT_GEOLOCATION 
 
     def update_database(self):
-        with open(self.path, "r+", encoding="utf-8") as yaml_file:
-            if self.database != self._yaml_read():
-                self._yaml_write_all()
-            else: pass
+        if self.database != self._yaml_read():
+            self._yaml_write_all()
+        else: pass
