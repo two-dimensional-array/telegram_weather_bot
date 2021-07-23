@@ -49,54 +49,29 @@ class Database:
             self._write_all()
         else: pass
 
-class JSON:
+class JSON(Database):
     def __init__(self, path = "users.json", indent = 4):
-        self.path = path
-        self.indent = indent
-        with open(self.path, "r+", encoding="utf-8") as json_file:
-            try:
-                self.database = json.load(json_file)
-            except:
-                self.database = {'users': []}
-                json.dump(self.database, json_file, indent=self.indent, ensure_ascii=False)
+        self.__indent = indent
+        Database.__init__(self, path)
 
-    def user_is_find(self,user_id):
-        for item in self.database["users"]:
-            if item["id"] == user_id:
-                return item
-        return None
-        
-    def init_user(self,user_id):
-        if self.user_is_find(user_id) == None:
-            with open(self.path, "w", encoding="utf-8") as json_file:
-                self.database["users"].append({"id": int(user_id), "geolocation": None})
-                json.dump(self.database, json_file, indent=self.indent, ensure_ascii=False)
-        else: pass
+    def _read(self):
+        database = {'users': []}
+        try:
+            with open(self._path, "r", encoding="utf-8") as file:
+                database = json.load(file)
+        except:
+                with open(self._path, "w", encoding="utf-8") as file:
+                    json.dump(database, file, indent=self.__indent, ensure_ascii=False)
+        return database
 
-    def set_geolocation(self,user_id,geolocation):
-        item = self.user_is_find(user_id)
-        with open(self.path, "w", encoding="utf-8") as json_file:
-            if item:
-                item["geolocation"] = geolocation
-            else:
-                self.database["users"].append({"id": int(user_id), "geolocation": geolocation})
-            json.dump(self.database, json_file, indent=self.indent, ensure_ascii=False)
+    def _append(self,item):
+        self._database["users"].append(item)
+        with open(self._path, "w", encoding="utf-8") as file:
+            json.dump(self._database, file, indent=self.__indent, ensure_ascii=False)
 
-    def get_geolocation(self,user_id):
-        item = self.user_is_find(user_id)
-        if item:
-            return item["geolocation"] if item["geolocation"] != None else DEFAULT_GEOLOCATION 
-        else:
-            with open(self.path, "w", encoding="utf-8") as json_file:
-                self.database["users"].append({"id": int(user_id), "geolocation": None})
-                json.dump(self.database, json_file, indent=self.indent, ensure_ascii=False)
-            return DEFAULT_GEOLOCATION 
-
-    def update_database(self):
-        with open(self.path, "r+", encoding="utf-8") as json_file:
-            if self.database != json.load(json_file):
-                json.dump(self.database, json_file, indent=self.indent, ensure_ascii=False)
-            else: pass
+    def _write_all(self):
+        with open(self._path, "w", encoding="utf-8") as file:
+            json.dump(self._database, file, indent=self.__indent, ensure_ascii=False)
 
 class CSV:
     def __init__(self, path = "users.csv", delimiter = ";"):
