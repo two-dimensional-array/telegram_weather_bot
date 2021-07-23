@@ -73,66 +73,33 @@ class JSON(Database):
         with open(self._path, "w", encoding="utf-8") as file:
             json.dump(self._database, file, indent=self.__indent, ensure_ascii=False)
 
-class CSV:
+class CSV(Database):
     def __init__(self, path = "users.csv", delimiter = ";"):
-        self.path = path
-        self.delimiter = delimiter
-        self.database = self._csv_read()
+        self.__delimiter = delimiter
+        Database.__init__(self, path)
 
-    def _csv_read(self):
+    def _read(self):
         database = []
         try:
-            with open(self.path, "r+", encoding="utf-8") as file:
+            with open(self._path, "r+", encoding="utf-8") as file:
                 for user in file.readlines()[1:]:
-                    item = user.split(self.delimiter)
+                    item = user.split(self.__delimiter)
                     database.append({"id": int(item[0]), "geolocation": item[1]})
         except:
-            with open(self.path, "w+", encoding="utf-8") as file:
-                file.write(CSV_FILE_HEADER[0]+self.delimiter+CSV_FILE_HEADER[1]+"\n")
+            with open(self._path, "w+", encoding="utf-8") as file:
+                file.write(CSV_FILE_HEADER[0]+self.__delimiter+CSV_FILE_HEADER[1]+"\n")
         return database
 
-    def _csv_append(self, item):
-        with open(self.path, "a", encoding="utf-8") as file:
-            file.write(str(item["id"])+self.delimiter+str(item["geolocation"])+"\n")
-        self.database.append(item)
+    def _append(self, item):
+        with open(self._path, "a", encoding="utf-8") as file:
+            file.write(str(item["id"])+self.__delimiter+str(item["geolocation"])+"\n")
+        self._database.append(item)
 
-    def _csv_write_all(self):
-        with open(self.path, "w+", encoding="utf-8") as file:
-            file.write(CSV_FILE_HEADER[0]+self.delimiter+CSV_FILE_HEADER[1]+"\n")
-            for item in self.database:
-                file.write(str(item["id"])+self.delimiter+str(item["geolocation"])+"\n")
-
-    def user_is_find(self,user_id):
-        for item in self.database:
-            if item["id"] == user_id:
-                return item
-        return None
-        
-    def init_user(self,user_id):
-        if self.user_is_find(user_id) == None:
-            self._csv_append({"id": int(user_id), "geolocation": DEFAULT_GEOLOCATION })
-        else: pass
-
-    def set_geolocation(self,user_id,geolocation):
-        item = self.user_is_find(user_id)
-        if item:
-            item["geolocation"] = geolocation
-            self._csv_write_all()
-        else:
-            self._csv_append({"id": int(user_id), "geolocation": geolocation})
-
-    def get_geolocation(self,user_id):
-        item = self.user_is_find(user_id)
-        if item:
-            return item["geolocation"]
-        else:
-            self._csv_append({"id": int(user_id), "geolocation": DEFAULT_GEOLOCATION })
-            return DEFAULT_GEOLOCATION 
-
-    def update_database(self):
-        if self.database != self._csv_read():
-            self._csv_write_all()
-        else: pass
+    def _write_all(self):
+        with open(self._path, "w+", encoding="utf-8") as file:
+            file.write(CSV_FILE_HEADER[0]+self.__delimiter+CSV_FILE_HEADER[1]+"\n")
+            for item in self._database:
+                file.write(str(item["id"])+self.__delimiter+str(item["geolocation"])+"\n")
 
 class YAML:
     def __init__(self, path = "users.yaml", indent = 2):
