@@ -23,6 +23,11 @@ class Database:
                 return item
         return None
 
+    def init_user(self,user_id):
+        if self.user_is_find(user_id) == None:
+            self._append({"id": int(user_id), "geolocation": None })
+        else: pass
+
 class JSON:
     def __init__(self, path = "users.json", indent = 4):
         self.path = path
