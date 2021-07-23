@@ -44,6 +44,11 @@ class Database:
             self._append({"id": int(user_id), "geolocation": None })
             return DEFAULT_GEOLOCATION 
 
+    def update_database(self):
+        if self._database != self._read():
+            self._write_all()
+        else: pass
+
 class JSON:
     def __init__(self, path = "users.json", indent = 4):
         self.path = path
