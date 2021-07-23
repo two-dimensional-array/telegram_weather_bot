@@ -4,7 +4,18 @@ CSV_FILE_HEADER = "id","geolocation"
 DEFAULT_GEOLOCATION = "Город не задан" 
 
 class Database:
-    pass
+    def __init__(self, path):
+        self._path = path
+        self._database = self._read()
+
+    def _read(self):
+        pass
+
+    def _append(self,item):
+        pass
+
+    def _write_all(self):
+        pass
 
 class JSON:
     def __init__(self, path = "users.json", indent = 4):
