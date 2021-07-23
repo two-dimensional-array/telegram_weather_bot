@@ -28,6 +28,14 @@ class Database:
             self._append({"id": int(user_id), "geolocation": None })
         else: pass
 
+    def set_geolocation(self,user_id,geolocation):
+        item = self._user_is_find(user_id)
+        if item:
+            item["geolocation"] = geolocation
+            self._write_all()
+        else:
+            self._append({"id": int(user_id), "geolocation": geolocation})
+
 class JSON:
     def __init__(self, path = "users.json", indent = 4):
         self.path = path
