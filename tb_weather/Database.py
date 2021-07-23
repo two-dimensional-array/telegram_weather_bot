@@ -87,19 +87,19 @@ class CSV(Database):
                     database.append({"id": int(item[0]), "geolocation": item[1]})
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
-                file.write(CSV_FILE_HEADER[0]+self.__delimiter+CSV_FILE_HEADER[1]+"\n")
+                file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
         return database
 
     def _append(self, item):
         with open(self._path, "a", encoding="utf-8") as file:
-            file.write(str(item["id"])+self.__delimiter+str(item["geolocation"])+"\n")
+            file.write(f'{item["id"]}{self.__delimiter}{item["geolocation"] if item["geolocation"] != None else DEFAULT_GEOLOCATION}\n')
         self._database.append(item)
 
     def _write_all(self):
         with open(self._path, "w+", encoding="utf-8") as file:
             file.write(CSV_FILE_HEADER[0]+self.__delimiter+CSV_FILE_HEADER[1]+"\n")
             for item in self._database:
-                file.write(str(item["id"])+self.__delimiter+str(item["geolocation"])+"\n")
+                file.write(f'{item["id"]}{self.__delimiter}{item["geolocation"] if item["geolocation"] != None else DEFAULT_GEOLOCATION}\n')
 
 class YAML:
     def __init__(self, path = "users.yaml", indent = 2):
