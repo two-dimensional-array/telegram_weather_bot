@@ -101,6 +101,12 @@ class CSV(Database):
             for item in self._database:
                 file.write(f'{item["id"]}{self.__delimiter}{item["geolocation"] if item["geolocation"] != None else DEFAULT_GEOLOCATION}\n')
 
+    def _user_is_find(self,user_id):
+        for item in self._database:
+            if item["id"] == user_id:
+                return item
+        return None
+
 class YAML:
     def __init__(self, path = "users.yaml", indent = 2):
         self.path = path
