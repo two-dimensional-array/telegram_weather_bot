@@ -107,70 +107,37 @@ class CSV(Database):
                 return item
         return None
 
-class YAML:
+class YAML(Database):
     def __init__(self, path = "users.yaml", indent = 2):
-        self.path = path
-        self.indent = indent
-        self.database = self._yaml_read()
+        self.__indent = indent
+        Database.__init__(self, path)
 
     def __write_user_to_str(self, item):
-        user_data = f'-{" " * (self.indent-1)}id: {item["id"]}\n'
-        user_data += f'{" " * self.indent}geolocation: {item["geolocation"] if item["geolocation"] != None else "null"}\n'
+        user_data = f'-{" " * (self.__indent-1)}id: {item["id"]}\n'
+        user_data += f'{" " * self.__indent}geolocation: {item["geolocation"] if item["geolocation"] != None else "null"}\n'
         return user_data
 
-    def _yaml_read(self):
+    def _read(self):
         database = {'users': []}
         try:
-            with open(self.path, "r+", encoding="utf-8") as file:
+            with open(self._path, "r+", encoding="utf-8") as file:
                 text = file.readlines()
                 for count in range(1,len(text),2):
-                    id = int(text[count][self.indent:].split(" ")[1])
-                    geolocation = text[count+1][self.indent:].split(" ")[1]
+                    id = int(text[count][self.__indent:].split(" ")[1])
+                    geolocation = text[count+1][self.__indent:].split(" ")[1]
                     database["users"].append({"id": id, "geolocation": geolocation if geolocation != "null\n" else None})
         except:
-            with open(self.path, "w+", encoding="utf-8") as file:
+            with open(self._path, "w+", encoding="utf-8") as file:
                 file.write("users:\n")
         return database
 
-    def _yaml_append(self, item):
-        with open(self.path, "a", encoding="utf-8") as file:
+    def _append(self, item):
+        with open(self._path, "a", encoding="utf-8") as file:
             file.write(self.__write_user_to_str(item))
-        self.database["users"].append(item)
+        self._database["users"].append(item)
 
-    def _yaml_write_all(self):
-        with open(self.path, "w+", encoding="utf-8") as file:
+    def _write_all(self):
+        with open(self._path, "w+", encoding="utf-8") as file:
             file.write("users:\n")
-            for item in self.database["users"]:
+            for item in self._database["users"]:
                 file.write(self.__write_user_to_str(item))
-
-    def user_is_find(self,user_id):
-        for item in self.database["users"]:
-            if item["id"] == user_id:
-                return item
-        return None
-
-    def init_user(self,user_id):
-        if self.user_is_find(user_id) == None:
-            self._yaml_append({"id": int(user_id), "geolocation": None})
-        else: pass
-
-    def set_geolocation(self,user_id,geolocation):
-        item = self.user_is_find(user_id)
-        if item:
-                item["geolocation"] = geolocation
-                self._yaml_write_all()
-        else:
-            self._yaml_append({"id": int(user_id), "geolocation": geolocation})
-
-    def get_geolocation(self,user_id):
-        item = self.user_is_find(user_id)
-        if item:
-            return item["geolocation"] if item["geolocation"] != None else DEFAULT_GEOLOCATION
-        else:
-            self._yaml_append({"id": int(user_id), "geolocation": None})
-            return DEFAULT_GEOLOCATION 
-
-    def update_database(self):
-        if self.database != self._yaml_read():
-            self._yaml_write_all()
-        else: pass
