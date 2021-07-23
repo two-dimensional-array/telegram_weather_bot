@@ -36,6 +36,14 @@ class Database:
         else:
             self._append({"id": int(user_id), "geolocation": geolocation})
 
+    def get_geolocation(self,user_id):
+        item = self._user_is_find(user_id)
+        if item:
+            return item["geolocation"] if item["geolocation"] != None else DEFAULT_GEOLOCATION
+        else:
+            self._append({"id": int(user_id), "geolocation": None })
+            return DEFAULT_GEOLOCATION 
+
 class JSON:
     def __init__(self, path = "users.json", indent = 4):
         self.path = path
