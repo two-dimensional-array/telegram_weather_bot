@@ -3,6 +3,9 @@ import json
 CSV_FILE_HEADER = "id","geolocation"
 DEFAULT_GEOLOCATION = "Город не задан" 
 
+class Database:
+    pass
+
 class JSON:
     def __init__(self, path = "users.json", indent = 4):
         self.path = path
