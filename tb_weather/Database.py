@@ -17,6 +17,12 @@ class Database:
     def _write_all(self):
         pass
 
+    def _user_is_find(self,user_id):
+        for item in self._database["users"]:
+            if item["id"] == user_id:
+                return item
+        return None
+
 class JSON:
     def __init__(self, path = "users.json", indent = 4):
         self.path = path
