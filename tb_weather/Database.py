@@ -9,13 +9,13 @@ class Database:
         self._database = self._read()
 
     def _read(self):
-        pass
+        raise NotImplementedError("Method _read() is`n implemented in child class")
 
     def _append(self,item):
-        pass
+        raise NotImplementedError("Method _append() is`n implemented in child class")
 
     def _write_all(self):
-        pass
+        raise NotImplementedError("Method _write_all() is`n implemented in child class")
 
     def _user_is_find(self,user_id):
         for item in self._database["users"]:
@@ -24,7 +24,7 @@ class Database:
         return None
 
     def init_user(self,user_id):
-        if self.user_is_find(user_id) == None:
+        if self._user_is_find(user_id) == None:
             self._append({"id": int(user_id), "geolocation": None })
         else: pass
 
