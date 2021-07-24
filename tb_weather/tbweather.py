@@ -25,37 +25,21 @@ def get_message(message):
 
 @bot.message_handler(commands=['update'])
 def update(message):
-    place = db.get_geolocation(message.chat.id)
-    if place == None or len(place) > 20:
-        place = "Город не найден"
-    try:
-        mgr.weather_at_place(place)
-    except pyowm.commons.exceptions.APIRequestError:
+    observation = get_current_weather(db.get_geolocation(message.chat.id))
+    if observation == None:
         bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
-        return
-    except pyowm.commons.exceptions.NotFoundError:
-        bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
-        bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
-        return
-    bot.send_message(message.chat.id, output_data(place), reply_markup=keyboard)
+    else:
+        bot.send_message(message.chat.id, output_data(observation),reply_markup=keyboard)
 
 def ask_place(message):
-    place = message.text
-    if place == None or len(place) > 20:
-        place = "Город не найден"
-    try:
-        mgr.weather_at_place(place)
-    except pyowm.commons.exceptions.APIRequestError:
+    observation = get_current_weather(message.text)
+    if observation == None:
         bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
-        return
-    except pyowm.commons.exceptions.NotFoundError:
-        bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
-        bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
-        return
-    db.set_geolocation(message.chat.id, place)
-    bot.send_message(message.chat.id, output_data(place),reply_markup=keyboard)
+    else:
+        db.set_geolocation(message.chat.id, f'{observation.location.name},{observation.location.country}')
+        bot.send_message(message.chat.id, output_data(observation),reply_markup=keyboard)
 
 @bot.message_handler(commands=['help'])
 def help_message(message):
@@ -65,10 +49,9 @@ def help_message(message):
 def current_place(message):
     bot.send_message(message.chat.id, db.get_geolocation(message.chat.id), reply_markup=keyboard)
 
-def output_data(place):
-    observation = mgr.weather_at_place(place)
+def output_data(observation):
     w = observation.weather
-    answear = "В городе " + place + " " + str(w.detailed_status) + "\n"
+    answear = "В городе " + observation.location.name + " " + str(w.detailed_status) + "\n"
     answear += "Температура воздуха составляет " + str(w.temperature('celsius')["temp"]) + " °C\n"
     answear += "Влажность воздуха равняется " + str(w.humidity) + "%\n"
     answear += "Скорость ветра состовляет " + str(w.wind()["speed"]) + " м/с\n"
@@ -76,5 +59,15 @@ def output_data(place):
     answear += "Восход солнца: " + str(w.sunrise_time(timeformat='iso')) + "\n"
     answear += "Заход солнца: " + str(w.sunset_time(timeformat='iso')) + "\n"
     return answear
+
+def get_current_weather(place):
+    if place == None or len(place) > 20:
+        return None
+    try:
+        observation = mgr.weather_at_place(place)
+    except:
+        return None
+    else:
+        return observation
 
 bot.polling(none_stop=True)
