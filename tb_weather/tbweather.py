@@ -51,13 +51,13 @@ def current_place(message):
 
 def output_data(observation):
     w = observation.weather
-    answear = "В городе " + observation.location.name + " " + str(w.detailed_status) + "\n"
-    answear += "Температура воздуха составляет " + str(w.temperature('celsius')["temp"]) + " °C\n"
-    answear += "Влажность воздуха равняется " + str(w.humidity) + "%\n"
-    answear += "Скорость ветра состовляет " + str(w.wind()["speed"]) + " м/с\n"
-    answear += "Облачность равняется " + str(w.clouds) + "% \n"
-    answear += "Восход солнца: " + str(w.sunrise_time(timeformat='iso')) + "\n"
-    answear += "Заход солнца: " + str(w.sunset_time(timeformat='iso')) + "\n"
+    answear = f'В городе {observation.location.name} {w.detailed_status}\n'
+    answear += f'Температура воздуха составляет {w.temperature("celsius")["temp"]} °C\n'
+    answear += f'Влажность воздуха равняется {w.humidity} %\n'
+    answear += f'Скорость ветра состовляет {w.wind()["speed"]} м/с\n'
+    answear += f'Облачность равняется {w.clouds} %\n'
+    answear += f'Восход солнца: {w.sunrise_time(timeformat="iso")}\n'
+    answear += f'Заход солнца: {w.sunset_time(timeformat="iso")}\n'
     return answear
 
 def get_current_weather(place):
