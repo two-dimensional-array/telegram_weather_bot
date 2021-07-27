@@ -1,4 +1,5 @@
 import json
+import re
 
 CSV_FILE_HEADER = "id","geolocation"
 DEFAULT_GEOLOCATION = "Город не задан" 
@@ -110,6 +111,7 @@ class CSV(Database):
 class YAML(Database):
     def __init__(self, path = "users.yaml", indent = 2):
         self.__indent = indent
+        self.__read_pattern = re.compile(r"-\s*id: (?P<id>\d+)\s*geolocation: (?P<geolocation>.*)\s")
         Database.__init__(self, path)
 
     def __write_user_to_str(self, item):
@@ -120,12 +122,11 @@ class YAML(Database):
     def _read(self):
         database = {'users': []}
         try:
-            with open(self._path, "r+", encoding="utf-8") as file:
-                text = file.readlines()
-                for count in range(1,len(text),2):
-                    id = int(text[count][self.__indent:].split(" ")[1])
-                    geolocation = text[count+1][self.__indent:].split(" ")[1]
-                    database["users"].append({"id": id, "geolocation": geolocation if geolocation != "null\n" else None})
+            with open(self._path, "r", encoding="utf-8") as file:
+                for m in self.__read_pattern.finditer(file.read()):
+                    id = int(m.group("id"))
+                    geolocation = m.group("geolocation")
+                    database["users"].append({"id": id, "geolocation": geolocation if geolocation != "null" else None})
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
                 file.write("users:\n")
