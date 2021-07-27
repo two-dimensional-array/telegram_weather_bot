@@ -53,13 +53,15 @@ class Database:
 class JSON(Database):
     def __init__(self, path = "users.json", indent = 4):
         self.__indent = indent
+        self.__read_pattern = re.compile(r'\s*\"id\": (?P<id>\d*),\s*\"geolocation\": (?:(?:\"(?P<geolocation>.*)\")|(?:null))\s')
         Database.__init__(self, path)
 
     def _read(self):
         database = {'users': []}
         try:
             with open(self._path, "r", encoding="utf-8") as file:
-                database = json.load(file)
+                for m in self.__read_pattern.finditer(file.read()): 
+                    database["users"].append({"id": int(m.group("id")), "geolocation": m.group("geolocation")})
         except:
                 with open(self._path, "w", encoding="utf-8") as file:
                     json.dump(database, file, indent=self.__indent, ensure_ascii=False)
