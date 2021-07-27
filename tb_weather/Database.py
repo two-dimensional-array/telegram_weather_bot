@@ -77,15 +77,15 @@ class JSON(Database):
 class CSV(Database):
     def __init__(self, path = "users.csv", delimiter = ";"):
         self.__delimiter = delimiter
+        self.__read_pattern = re.compile(r'(?P<id>\d+).\"(?P<geolocation>.*)\"\s')
         Database.__init__(self, path)
 
     def _read(self):
         database = []
         try:
-            with open(self._path, "r+", encoding="utf-8") as file:
-                for user in file.readlines()[1:]:
-                    item = user.split(self.__delimiter)
-                    database.append({"id": int(item[0]), "geolocation": item[1]})
+            with open(self._path, "r", encoding="utf-8") as file:
+                for m in self.__read_pattern.finditer(file.read()):
+                    database.append(m.groupdict)
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
                 file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
