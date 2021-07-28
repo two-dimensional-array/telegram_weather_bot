@@ -1,4 +1,3 @@
-import json
 import re
 
 CSV_FILE_HEADER = "id","geolocation"
@@ -56,6 +55,14 @@ class JSON(Database):
         self.__read_pattern = re.compile(r'\s*\"id\": (?P<id>\d*),\s*\"geolocation\": (?:(?:\"(?P<geolocation>.*)\")|(?:null))\s')
         Database.__init__(self, path)
 
+    def __write_user_to_str(self, item):
+        geolocation = f'"{item["geolocation"]}"' if item["geolocation"] != None else "null"
+        user_data  = f'{" "*(self.__indent*2)}{{\n'
+        user_data += f'{" "*(self.__indent*3)}"id": {item["id"]},\n'
+        user_data += f'{" "*(self.__indent*3)}"geolocation": {geolocation}\n'
+        user_data += f'{" "*(self.__indent*2)}}}'
+        return user_data
+
     def _read(self):
         database = {'users': []}
         try:
@@ -70,28 +77,14 @@ class JSON(Database):
     def _append(self,item):
         with open(self._path, "a", encoding="utf-8") as file:
             file.truncate(file.tell()-(8+self.__indent))
-            geolocation = "\""+item["geolocation"]+"\"" if item["geolocation"] != None else "null"
-            file.write(f',\n{" "*(self.__indent*2)}{{\n')
-            file.write(f'{" "*(self.__indent*3)}"id": {item["id"]},\n')
-            file.write(f'{" "*(self.__indent*3)}"geolocation": {geolocation}\n')
-            file.write(f'{" "*(self.__indent*2)}}}\n')
-            file.write(f'{" "*self.__indent}]\n}}\n')
+            file.write(f',\n{self.__write_user_to_str(item)}\n{" "*self.__indent}]\n}}\n')
         self._database["users"].append(item)
 
     def _write_all(self):
         with open(self._path, "w+", encoding="utf-8") as file:
-            file.write(f'{{\n{" "*self.__indent}"users": [\n')
-            geolocation = "\""+self._database["users"][0]["geolocation"]+"\"" if self._database["users"][0]["geolocation"] != None else "null"
-            file.write(f'{" "*(self.__indent*2)}{{\n')
-            file.write(f'{" "*(self.__indent*3)}"id": {self._database["users"][0]["id"]},\n')
-            file.write(f'{" "*(self.__indent*3)}"geolocation": {geolocation}\n')
-            file.write(f'{" "*(self.__indent*2)}}}')
+            file.write(f'{{\n{" "*self.__indent}"users": [\n{self.__write_user_to_str(self._database["users"][0])}')
             for item in self._database["users"][1:]:
-                geolocation = "\""+item["geolocation"]+"\"" if item["geolocation"] != None else "null"
-                file.write(f',\n{" "*(self.__indent*2)}{{\n')
-                file.write(f'{" "*(self.__indent*3)}"id": {item["id"]},\n')
-                file.write(f'{" "*(self.__indent*3)}"geolocation": {geolocation}\n')
-                file.write(f'{" "*(self.__indent*2)}}}')
+                file.write(f',\n{self.__write_user_to_str(item)}')
             file.write(f'\n{" "*self.__indent}]\n}}\n')
 
 class CSV(Database):
