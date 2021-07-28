@@ -10,21 +10,25 @@ BUTTON_PLACE_TEXT = "Выбрать город"
 BUTTON_UPDATE_TEXT = "Обновить погоду"
 BUTTON_CURRENT_PLACE_TEXT = "Текущий город"
 BUTTON_HELP_TEXT = "Справка"
+BUTTON_CANCEL_TEXT = "Отмена"
 COMMANDS = {
     "start": ("/start"),
     "place": ("/place", BUTTON_PLACE_TEXT),
     "update": ("/update", BUTTON_UPDATE_TEXT),
     "current_place": ("/current_place", BUTTON_CURRENT_PLACE_TEXT),
-    "help": ("/help", BUTTON_HELP_TEXT)
+    "help": ("/help", BUTTON_HELP_TEXT),
+    "cancel":("/cancel", BUTTON_CANCEL_TEXT)
 }
 
 bot = TeleBot(telegram_key)
 mgr = OWM(weather_key).weather_manager()
-help_msg = "Команды:\n/place - Ввод названия города. \n/update - Обновление информации об погоде в текущем городе \n/current_place - Вывод текущего города. \n/help - Вывод справки по командам бота"
+help_msg = "Команды:\n/place - Ввод названия города. \n/update - Обновление информации об погоде в текущем городе \n/current_place - Вывод текущего города. \n/cancel - Отмена действия. \n/help - Вывод справки по командам бота"
 
 control_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 control_keyboard.row(BUTTON_PLACE_TEXT, BUTTON_UPDATE_TEXT)
 control_keyboard.row(BUTTON_CURRENT_PLACE_TEXT, BUTTON_HELP_TEXT)
+cancel_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+cancel_keyboard.row(BUTTON_CANCEL_TEXT)
 
 db = YAML()
 
@@ -47,25 +51,28 @@ def start_message(message):
     bot.send_message(message.chat.id, "Здравствуйте " + str(message.chat.username) + " !\nВас приветсвует телеграм бот созданый творцом two-dimensional-array\nДля отображения списка комманд введите /help",reply_markup=control_keyboard)
 
 def get_place(message):
-    bot.send_message(message.chat.id, "Введите название вашего города:")
+    bot.send_message(message.chat.id, "Введите название вашего города:", reply_markup=cancel_keyboard)
     bot.register_next_step_handler(message, ask_place)
 
 def update(message):
     observation = get_current_weather(db.get_geolocation(message.chat.id))
     if observation == None:
-        bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
+        bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:", reply_markup=cancel_keyboard)
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
     else:
         bot.send_message(message.chat.id, output_data(observation),reply_markup=control_keyboard)
 
 def ask_place(message):
-    observation = get_current_weather(message.text)
-    if observation == None:
-        bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
-        bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
+    if message.text in COMMANDS["cancel"]:
+        bot.send_message(message.chat.id, "Введите команду", reply_markup=control_keyboard)
     else:
-        db.set_geolocation(message.chat.id, f'{observation.location.name},{observation.location.country}')
-        bot.send_message(message.chat.id, output_data(observation),reply_markup=control_keyboard)
+        observation = get_current_weather(message.text)
+        if observation == None:
+            bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:", reply_markup=cancel_keyboard)
+            bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
+        else:
+            db.set_geolocation(message.chat.id, f'{observation.location.name},{observation.location.country}')
+            bot.send_message(message.chat.id, output_data(observation),reply_markup=control_keyboard)
 
 def help_message(message):
     bot.send_message(message.chat.id, help_msg,reply_markup=control_keyboard)
