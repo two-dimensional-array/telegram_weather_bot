@@ -3,6 +3,10 @@ import re
 CSV_FILE_HEADER = "id","geolocation"
 DEFAULT_GEOLOCATION = "Город не задан" 
 
+JSON_READ_PATTERN = r'\s*\"id\": (?P<id>\d*),\s*\"geolocation\": (?:(?:\"(?P<geolocation>.*)\")|(?:null))\s'
+CSV_READ_PATTERN = r'(?P<id>\d+).\"(?P<geolocation>.*)\"\s'
+YAML_READ_PATTERN = r'-\s*id: (?P<id>\d+)\s*geolocation: (?P<geolocation>.*)\s'
+
 class Database:
     def __init__(self, path: str, read_pattern: str):
         self._path = path
@@ -53,7 +57,7 @@ class Database:
 class JSON(Database):
     def __init__(self, path: str = "users.json", indent: int = 4):
         self.__indent = indent
-        Database.__init__(self, path, r'\s*\"id\": (?P<id>\d*),\s*\"geolocation\": (?:(?:\"(?P<geolocation>.*)\")|(?:null))\s')
+        Database.__init__(self, path, JSON_READ_PATTERN)
 
     def __write_user_to_str(self, item: dict[int,str]) -> str:
         geolocation = f'"{item["geolocation"]}"' if item["geolocation"] != None else "null"
@@ -90,7 +94,7 @@ class JSON(Database):
 class CSV(Database):
     def __init__(self, path: str = "users.csv", delimiter: str = ";"):
         self.__delimiter = delimiter
-        Database.__init__(self, path, r'(?P<id>\d+).\"(?P<geolocation>.*)\"\s')
+        Database.__init__(self, path, CSV_READ_PATTERN)
 
     def _read(self) -> list:
         database = []
@@ -123,7 +127,7 @@ class CSV(Database):
 class YAML(Database):
     def __init__(self, path: str = "users.yaml", indent: int = 2):
         self.__indent = indent
-        Database.__init__(self, path, r'-\s*id: (?P<id>\d+)\s*geolocation: (?P<geolocation>.*)\s')
+        Database.__init__(self, path, YAML_READ_PATTERN)
 
     def __write_user_to_str(self, item: dict[int,str]) -> str:
         user_data = f'-{" " * (self.__indent-1)}id: {item["id"]}\n'
