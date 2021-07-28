@@ -4,8 +4,9 @@ CSV_FILE_HEADER = "id","geolocation"
 DEFAULT_GEOLOCATION = "Город не задан" 
 
 class Database:
-    def __init__(self, path):
+    def __init__(self, path: str, read_pattern: str):
         self._path = path
+        self._read_pattern = re.compile(read_pattern)
         self._database = self._read()
 
     def _read(self) -> list:
@@ -52,8 +53,7 @@ class Database:
 class JSON(Database):
     def __init__(self, path: str = "users.json", indent: int = 4):
         self.__indent = indent
-        self.__read_pattern = re.compile(r'\s*\"id\": (?P<id>\d*),\s*\"geolocation\": (?:(?:\"(?P<geolocation>.*)\")|(?:null))\s')
-        Database.__init__(self, path)
+        Database.__init__(self, path, r'\s*\"id\": (?P<id>\d*),\s*\"geolocation\": (?:(?:\"(?P<geolocation>.*)\")|(?:null))\s')
 
     def __write_user_to_str(self, item: dict[int,str]) -> str:
         geolocation = f'"{item["geolocation"]}"' if item["geolocation"] != None else "null"
@@ -67,7 +67,7 @@ class JSON(Database):
         database = {'users': []}
         try:
             with open(self._path, "r", encoding="utf-8") as file:
-                for m in self.__read_pattern.finditer(file.read()): 
+                for m in self._read_pattern.finditer(file.read()): 
                     database["users"].append({"id": int(m.group("id")), "geolocation": m.group("geolocation")})
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
@@ -90,14 +90,13 @@ class JSON(Database):
 class CSV(Database):
     def __init__(self, path: str = "users.csv", delimiter: str = ";"):
         self.__delimiter = delimiter
-        self.__read_pattern = re.compile(r'(?P<id>\d+).\"(?P<geolocation>.*)\"\s')
-        Database.__init__(self, path)
+        Database.__init__(self, path, r'(?P<id>\d+).\"(?P<geolocation>.*)\"\s')
 
     def _read(self) -> list:
         database = []
         try:
             with open(self._path, "r", encoding="utf-8") as file:
-                for m in self.__read_pattern.finditer(file.read()):
+                for m in self._read_pattern.finditer(file.read()):
                     database.append(m.groupdict)
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
@@ -124,8 +123,7 @@ class CSV(Database):
 class YAML(Database):
     def __init__(self, path: str = "users.yaml", indent: int = 2):
         self.__indent = indent
-        self.__read_pattern = re.compile(r"-\s*id: (?P<id>\d+)\s*geolocation: (?P<geolocation>.*)\s")
-        Database.__init__(self, path)
+        Database.__init__(self, path, r'-\s*id: (?P<id>\d+)\s*geolocation: (?P<geolocation>.*)\s')
 
     def __write_user_to_str(self, item: dict[int,str]) -> str:
         user_data = f'-{" " * (self.__indent-1)}id: {item["id"]}\n'
@@ -136,7 +134,7 @@ class YAML(Database):
         database = {'users': []}
         try:
             with open(self._path, "r", encoding="utf-8") as file:
-                for m in self.__read_pattern.finditer(file.read()):
+                for m in self._read_pattern.finditer(file.read()):
                     id = int(m.group("id"))
                     geolocation = m.group("geolocation")
                     database["users"].append({"id": id, "geolocation": geolocation if geolocation != "null" else None})
