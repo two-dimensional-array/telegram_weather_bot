@@ -6,12 +6,16 @@ from Database import YAML
 from config import *
 
 MAX_LEN_OF_PLACE = 20
+BUTTON_PLACE_TEXT = "Выбрать город"
+BUTTON_UPDATE_TEXT = "Обновить погоду"
+BUTTON_CURRENT_PLACE_TEXT = "Текущий город"
+BUTTON_HELP_TEXT = "Справка"
 COMMANDS = {
     "start": ("/start"),
-    "place": ("/place","place"),
-    "update": ("/update","update"),
-    "current_place": ("/current_place","current_place"),
-    "help": ("/help","help")
+    "place": ("/place", BUTTON_PLACE_TEXT),
+    "update": ("/update", BUTTON_UPDATE_TEXT),
+    "current_place": ("/current_place", BUTTON_CURRENT_PLACE_TEXT),
+    "help": ("/help", BUTTON_HELP_TEXT)
 }
 
 bot = TeleBot(telegram_key)
@@ -19,7 +23,7 @@ mgr = OWM(weather_key).weather_manager()
 help_msg = "Команды:\n/place - Ввод названия города. \n/update - Обновление информации об погоде в текущем городе \n/current_place - Вывод текущего города. \n/help - Вывод справки по командам бота"
 
 keyboard = ReplyKeyboardMarkup(True, True)
-keyboard.row('/place', '/update','/current_place','/help')
+keyboard.row(BUTTON_PLACE_TEXT, BUTTON_UPDATE_TEXT, BUTTON_CURRENT_PLACE_TEXT, BUTTON_HELP_TEXT)
 
 db = YAML()
 
