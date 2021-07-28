@@ -68,9 +68,15 @@ class JSON(Database):
         return database
 
     def _append(self,item):
+        with open(self._path, "a", encoding="utf-8") as file:
+            file.truncate(file.tell()-(8+self.__indent))
+            geolocation = "\""+item["geolocation"]+"\"" if item["geolocation"] != None else "null"
+            file.write(f',\n{" "*(self.__indent*2)}{{\n')
+            file.write(f'{" "*(self.__indent*3)}"id": {item["id"]},\n')
+            file.write(f'{" "*(self.__indent*3)}"geolocation": {geolocation}\n')
+            file.write(f'{" "*(self.__indent*2)}}}\n')
+            file.write(f'{" "*self.__indent}]\n}}\n')
         self._database["users"].append(item)
-        with open(self._path, "w", encoding="utf-8") as file:
-            json.dump(self._database, file, indent=self.__indent, ensure_ascii=False)
 
     def _write_all(self):
         with open(self._path, "w", encoding="utf-8") as file:
