@@ -6,6 +6,13 @@ from Database import YAML
 from config import *
 
 MAX_LEN_OF_PLACE = 20
+COMMANDS = {
+    "start": ("/start"),
+    "place": ("/place","place"),
+    "update": ("/update","update"),
+    "current_place": ("/current_place","current_place"),
+    "help": ("/help","help")
+}
 
 bot = TeleBot(telegram_key)
 mgr = OWM(weather_key).weather_manager()
@@ -16,17 +23,28 @@ keyboard.row('/place', '/update','/current_place','/help')
 
 db = YAML()
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(content_types=['text'])
+def main(message):
+    if message.text in COMMANDS["start"]:
+        start_message(message)
+    elif message.text in COMMANDS["place"]:
+        get_place(message)
+    elif message.text in COMMANDS["update"]:
+        update(message)
+    elif message.text in COMMANDS["current_place"]:
+        current_place(message)
+    elif message.text in COMMANDS["help"]:
+        help_message(message)
+    else: pass
+
 def start_message(message):
     db.init_user(message.chat.id)
     bot.send_message(message.chat.id, "Здравствуйте " + str(message.chat.username) + " !\nВас приветсвует телеграм бот созданый творцом two-dimensional-array\nДля отображения списка комманд введите /help",reply_markup=keyboard)
 
-@bot.message_handler(commands=['place'])
-def get_message(message):
+def get_place(message):
     bot.send_message(message.chat.id, "Введите название вашего города:")
     bot.register_next_step_handler(message, ask_place)
 
-@bot.message_handler(commands=['update'])
 def update(message):
     observation = get_current_weather(db.get_geolocation(message.chat.id))
     if observation == None:
@@ -44,11 +62,9 @@ def ask_place(message):
         db.set_geolocation(message.chat.id, f'{observation.location.name},{observation.location.country}')
         bot.send_message(message.chat.id, output_data(observation),reply_markup=keyboard)
 
-@bot.message_handler(commands=['help'])
 def help_message(message):
     bot.send_message(message.chat.id, help_msg,reply_markup=keyboard)
 
-@bot.message_handler(commands=['current_place'])
 def current_place(message):
     bot.send_message(message.chat.id, db.get_geolocation(message.chat.id), reply_markup=keyboard)
 
