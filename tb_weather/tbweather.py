@@ -22,8 +22,9 @@ bot = TeleBot(telegram_key)
 mgr = OWM(weather_key).weather_manager()
 help_msg = "Команды:\n/place - Ввод названия города. \n/update - Обновление информации об погоде в текущем городе \n/current_place - Вывод текущего города. \n/help - Вывод справки по командам бота"
 
-keyboard = ReplyKeyboardMarkup(True, True)
-keyboard.row(BUTTON_PLACE_TEXT, BUTTON_UPDATE_TEXT, BUTTON_CURRENT_PLACE_TEXT, BUTTON_HELP_TEXT)
+control_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+control_keyboard.row(BUTTON_PLACE_TEXT, BUTTON_UPDATE_TEXT)
+control_keyboard.row(BUTTON_CURRENT_PLACE_TEXT, BUTTON_HELP_TEXT)
 
 db = YAML()
 
@@ -43,7 +44,7 @@ def main(message):
 
 def start_message(message):
     db.init_user(message.chat.id)
-    bot.send_message(message.chat.id, "Здравствуйте " + str(message.chat.username) + " !\nВас приветсвует телеграм бот созданый творцом two-dimensional-array\nДля отображения списка комманд введите /help",reply_markup=keyboard)
+    bot.send_message(message.chat.id, "Здравствуйте " + str(message.chat.username) + " !\nВас приветсвует телеграм бот созданый творцом two-dimensional-array\nДля отображения списка комманд введите /help",reply_markup=control_keyboard)
 
 def get_place(message):
     bot.send_message(message.chat.id, "Введите название вашего города:")
@@ -55,7 +56,7 @@ def update(message):
         bot.send_message(message.chat.id, "Не верно введён город!\nВведите название вашего города:")
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
     else:
-        bot.send_message(message.chat.id, output_data(observation),reply_markup=keyboard)
+        bot.send_message(message.chat.id, output_data(observation),reply_markup=control_keyboard)
 
 def ask_place(message):
     observation = get_current_weather(message.text)
@@ -64,13 +65,13 @@ def ask_place(message):
         bot.register_next_step_handler_by_chat_id(message.chat.id, ask_place)
     else:
         db.set_geolocation(message.chat.id, f'{observation.location.name},{observation.location.country}')
-        bot.send_message(message.chat.id, output_data(observation),reply_markup=keyboard)
+        bot.send_message(message.chat.id, output_data(observation),reply_markup=control_keyboard)
 
 def help_message(message):
-    bot.send_message(message.chat.id, help_msg,reply_markup=keyboard)
+    bot.send_message(message.chat.id, help_msg,reply_markup=control_keyboard)
 
 def current_place(message):
-    bot.send_message(message.chat.id, db.get_geolocation(message.chat.id), reply_markup=keyboard)
+    bot.send_message(message.chat.id, db.get_geolocation(message.chat.id), reply_markup=control_keyboard)
 
 def output_data(observation: Observation) -> str:
     w = observation.weather
