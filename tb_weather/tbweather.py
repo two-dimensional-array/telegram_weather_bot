@@ -1,17 +1,20 @@
-import telebot
-import pyowm
-import Database
+from pyowm.owm import OWM
+from pyowm.weatherapi25.observation import Observation
+from telebot import TeleBot
+from telebot.types import ReplyKeyboardMarkup
+from Database import YAML
 from config import *
 
-bot = telebot.TeleBot(telegram_key)
-owm = pyowm.OWM(weather_key)
-mgr = owm.weather_manager()
+MAX_LEN_OF_PLACE = 20
+
+bot = TeleBot(telegram_key)
+mgr = OWM(weather_key).weather_manager()
 help_msg = "Команды:\n/place - Ввод названия города. \n/update - Обновление информации об погоде в текущем городе \n/current_place - Вывод текущего города. \n/help - Вывод справки по командам бота"
 
-keyboard = telebot.types.ReplyKeyboardMarkup(True, True)
+keyboard = ReplyKeyboardMarkup(True, True)
 keyboard.row('/place', '/update','/current_place','/help')
 
-db = Database.YAML()
+db = YAML()
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
@@ -49,7 +52,7 @@ def help_message(message):
 def current_place(message):
     bot.send_message(message.chat.id, db.get_geolocation(message.chat.id), reply_markup=keyboard)
 
-def output_data(observation):
+def output_data(observation: Observation) -> str:
     w = observation.weather
     answear = f'В городе {observation.location.name} {w.detailed_status}\n'
     answear += f'Температура воздуха составляет {w.temperature("celsius")["temp"]} °C\n'
@@ -60,8 +63,8 @@ def output_data(observation):
     answear += f'Заход солнца: {w.sunset_time(timeformat="iso")}\n'
     return answear
 
-def get_current_weather(place):
-    if place == None or len(place) > 20:
+def get_current_weather(place: str) -> Observation or None:
+    if place == None or len(place) > MAX_LEN_OF_PLACE:
         return None
     try:
         observation = mgr.weather_at_place(place)
