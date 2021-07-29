@@ -2,6 +2,7 @@
 __pycache__/
 tb_weather/__pycache__/
 *.py[cod]
+env/
 ### Repository files ###
 tb_weather/config.py
 tb_weather/users.json
