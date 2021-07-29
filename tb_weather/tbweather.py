@@ -85,8 +85,8 @@ def output_data(observation: Observation) -> str:
     answear += f'Влажность воздуха равняется {weather.humidity} %\n'
     answear += f'Скорость ветра состовляет {weather.wind()["speed"]} м/с\n'
     answear += f'Облачность равняется {weather.clouds} %\n'
-    answear += f'Восход солнца: {weather.sunrise_time(timeformat="iso")}\n'
-    answear += f'Заход солнца: {weather.sunset_time(timeformat="iso")}\n'
+    answear += f'Восход солнца  в {weather.sunrise_time(timeformat="date").time()} по Гринвичу\n'
+    answear += f'Заход солнца в {weather.sunset_time(timeformat="date").time()} по Гринвичу\n'
     return answear
 
 def get_current_weather(place: str) -> Observation or None:
