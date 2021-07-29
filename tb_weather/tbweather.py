@@ -1,4 +1,5 @@
 from pyowm.owm import OWM
+from pyowm.utils import config
 from pyowm.weatherapi25.observation import Observation
 from telebot import TeleBot
 from telebot.types import Message, ReplyKeyboardMarkup
@@ -22,7 +23,9 @@ COMMANDS = {
 HELP_MESSAGE = "Команды:\n/place - Ввод названия города. \n/update - Обновление информации об погоде в текущем городе \n/current_place - Вывод текущего города. \n/cancel - Отмена действия. \n/help - Вывод справки по командам бота"
 
 bot = TeleBot(telegram_key)
-mgr = OWM(weather_key).weather_manager()
+config_wether_manager = config.get_default_config()
+config_wether_manager['language'] = 'ru'
+mgr = OWM(weather_key, config=config_wether_manager).weather_manager()
 control_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 control_keyboard.row(BUTTON_PLACE_TEXT, BUTTON_UPDATE_TEXT)
 control_keyboard.row(BUTTON_CURRENT_PLACE_TEXT, BUTTON_HELP_TEXT)
