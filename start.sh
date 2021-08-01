@@ -9,17 +9,31 @@ REQUIRETMENTS_NAME=requiretments.txt
 REQUIRETMENTS_PATH=$SCRIPT_PATH/$REQUIRETMENTS_NAME
 PY=python
 PIP=pip
+ACTION=${1:---install}
 
-case $1 in
--r|--run)
+run ()
+{
 cd $PROGRAMM_PATH
 $PY $PROGRAMM_NAME
+}
+clean ()
+{
+rm -rf $PROGRAMM_PATH/$CLEAN_NAME
+}
+requiretments ()
+{
+$PIP install -r $REQUIRETMENTS_PATH
+}
+
+case $ACTION in
+-r|--run)
+run
 ;;
 -c|--clean)
-rm -rf $PROGRAMM_PATH/$CLEAN_NAME
+clean
 ;;
 -rq|--requiretments)
-$PIP install -r $REQUIRETMENTS_PATH
+requiretments
 ;;
 esac
 
