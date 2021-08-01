@@ -35,6 +35,10 @@ clean
 -rq|--requiretments)
 requiretments
 ;;
+-i|--install)
+requiretments
+run
+;;
 esac
 
 exit 0
