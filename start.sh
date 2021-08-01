@@ -39,6 +39,10 @@ requiretments
 requiretments
 run
 ;;
+-rb|--re-build)
+clean
+run
+;;
 esac
 
 exit 0
