@@ -4,8 +4,8 @@ CSV_FILE_HEADER = "id","geolocation"
 DEFAULT_GEOLOCATION = "Город не задан" 
 
 JSON_READ_PATTERN = r'\s*\"id\": (?P<id>\d*),\s*\"geolocation\": (?:(?:\"(?P<geolocation>.*)\")|(?:null))\s'
-CSV_READ_PATTERN = r'(?P<id>\d+).\"(?P<geolocation>.*)\"\s'
-YAML_READ_PATTERN = r'-\s*id: (?P<id>\d+)\s*geolocation: (?P<geolocation>.*)\s'
+CSV_READ_PATTERN = r'(?P<id>\d+).(?:(?:\"(?P<geolocation>.*)\"\s)|\s)'
+YAML_READ_PATTERN = r'-\s*id: (?P<id>\d+)\s*geolocation: (?:(?:null)|(?P<geolocation>.*))\s'
 
 class Database:
     def __init__(self, path: str, read_pattern: str):
@@ -44,7 +44,7 @@ class Database:
     def get_geolocation(self, user_id: int) -> str:
         item = self._user_is_find(user_id)
         if item:
-            return item["geolocation"] if item["geolocation"] != None else DEFAULT_GEOLOCATION
+            return item["geolocation"] if item["geolocation"] else DEFAULT_GEOLOCATION
         else:
             self._append({"id": int(user_id), "geolocation": None })
             return DEFAULT_GEOLOCATION 
@@ -60,7 +60,7 @@ class JSON(Database):
         Database.__init__(self, path, JSON_READ_PATTERN)
 
     def __write_user_to_str(self, item: dict[int,str]) -> str:
-        geolocation = f'"{item["geolocation"]}"' if item["geolocation"] != None else "null"
+        geolocation = f'"{item["geolocation"]}"' if item["geolocation"] else "null"
         user_data  = f'{" "*(self.__indent*2)}{{\n'
         user_data += f'{" "*(self.__indent*3)}"id": {item["id"]},\n'
         user_data += f'{" "*(self.__indent*3)}"geolocation": {geolocation}\n'
@@ -71,8 +71,10 @@ class JSON(Database):
         database = {'users': []}
         try:
             with open(self._path, "r", encoding="utf-8") as file:
-                for m in self._read_pattern.finditer(file.read()): 
-                    database["users"].append({"id": int(m.group("id")), "geolocation": m.group("geolocation")})
+                for match in self._read_pattern.finditer(file.read()): 
+                    id = int(match.group("id"))
+                    geolocation = match.group("geolocation")
+                    database["users"].append({"id": id, "geolocation": geolocation })
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
                 file.write(f'{{\n{" "*self.__indent}"users": [\n{" "*self.__indent}]\n}}\n')
@@ -100,23 +102,27 @@ class CSV(Database):
         database = []
         try:
             with open(self._path, "r", encoding="utf-8") as file:
-                for m in self._read_pattern.finditer(file.read()):
-                    database.append(m.groupdict)
+                for match in self._read_pattern.finditer(file.read()):
+                    id = int(match.group("id"))
+                    geolocation = match.group("geolocation")
+                    database.append({"id": id, "geolocation": geolocation })
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
                 file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
         return database
 
-    def _append(self, item: dict[int,str]):
+    def _append(self, item: dict[int,str]) -> None:
+        geolocation = f'"{item["geolocation"]}"\n' if item["geolocation"] else "\n"
         with open(self._path, "a", encoding="utf-8") as file:
-            file.write(f'{item["id"]}{self.__delimiter}{item["geolocation"] if item["geolocation"] != None else DEFAULT_GEOLOCATION}\n')
+            file.write(f'{item["id"]}{self.__delimiter}{geolocation}')
         self._database.append(item)
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
-            file.write(CSV_FILE_HEADER[0]+self.__delimiter+CSV_FILE_HEADER[1]+"\n")
+            file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
             for item in self._database:
-                file.write(f'{item["id"]}{self.__delimiter}{item["geolocation"] if item["geolocation"] != None else DEFAULT_GEOLOCATION}\n')
+                geolocation = f'"{item["geolocation"]}"\n' if item["geolocation"] else "\n"
+                file.write(f'{item["id"]}{self.__delimiter}{geolocation}')
 
     def _user_is_find(self, user_id: int) -> dict[int,str] or None:
         for item in self._database:
@@ -131,17 +137,17 @@ class YAML(Database):
 
     def __write_user_to_str(self, item: dict[int,str]) -> str:
         user_data = f'-{" " * (self.__indent-1)}id: {item["id"]}\n'
-        user_data += f'{" " * self.__indent}geolocation: {item["geolocation"] if item["geolocation"] != None else "null"}\n'
+        user_data += f'{" " * self.__indent}geolocation: {item["geolocation"] if item["geolocation"] else "null"}\n'
         return user_data
 
     def _read(self) -> list:
         database = {'users': []}
         try:
             with open(self._path, "r", encoding="utf-8") as file:
-                for m in self._read_pattern.finditer(file.read()):
-                    id = int(m.group("id"))
-                    geolocation = m.group("geolocation")
-                    database["users"].append({"id": id, "geolocation": geolocation if geolocation != "null" else None})
+                for match in self._read_pattern.finditer(file.read()):
+                    id = int(match.group("id"))
+                    geolocation = match.group("geolocation")
+                    database["users"].append({"id": id, "geolocation": geolocation })
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
                 file.write("users:\n")
