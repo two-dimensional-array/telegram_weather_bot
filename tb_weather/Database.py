@@ -22,6 +22,9 @@ class Database:
     def _write_all(self) -> None:
         raise NotImplementedError("Method _write_all() is`n implemented in child class")
 
+    def _write_user_to_str(self, item: dict[int,str]) -> str:
+        raise NotImplementedError("Method _write_user_to_str() is`n implemented in child class")
+
     def _user_is_find(self, user_id: int) -> dict[int,str] or None:
         for item in self._database["users"]:
             if item["id"] == user_id:
@@ -59,7 +62,7 @@ class JSON(Database):
         self.__indent = indent
         Database.__init__(self, path, JSON_READ_PATTERN)
 
-    def __write_user_to_str(self, item: dict[int,str]) -> str:
+    def _write_user_to_str(self, item: dict[int,str]) -> str:
         geolocation = f'"{item["geolocation"]}"' if item["geolocation"] else "null"
         user_data  = f'{" "*(self.__indent*2)}{{\n'
         user_data += f'{" "*(self.__indent*3)}"id": {item["id"]},\n'
@@ -83,14 +86,14 @@ class JSON(Database):
     def _append(self, item: dict[int,str]):
         with open(self._path, "a", encoding="utf-8") as file:
             file.truncate(file.tell()-(8+self.__indent))
-            file.write(f',\n{self.__write_user_to_str(item)}\n{" "*self.__indent}]\n}}\n')
+            file.write(f',\n{self._write_user_to_str(item)}\n{" "*self.__indent}]\n}}\n')
         self._database["users"].append(item)
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
-            file.write(f'{{\n{" "*self.__indent}"users": [\n{self.__write_user_to_str(self._database["users"][0])}')
+            file.write(f'{{\n{" "*self.__indent}"users": [\n{self._write_user_to_str(self._database["users"][0])}')
             for item in self._database["users"][1:]:
-                file.write(f',\n{self.__write_user_to_str(item)}')
+                file.write(f',\n{self._write_user_to_str(item)}')
             file.write(f'\n{" "*self.__indent}]\n}}\n')
 
 class CSV(Database):
@@ -98,7 +101,7 @@ class CSV(Database):
         self.__delimiter = delimiter
         Database.__init__(self, path, CSV_READ_PATTERN)
 
-    def __write_user_to_str(self, item: dict[int,str]) -> str:
+    def _write_user_to_str(self, item: dict[int,str]) -> str:
         geolocation = f'"{item["geolocation"]}"\n' if item["geolocation"] else "\n"
         return f'{item["id"]}{self.__delimiter}{geolocation}'
 
@@ -117,14 +120,14 @@ class CSV(Database):
 
     def _append(self, item: dict[int,str]) -> None:
         with open(self._path, "a", encoding="utf-8") as file:
-            file.write(self.__write_user_to_str(item))
+            file.write(self._write_user_to_str(item))
         self._database.append(item)
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
             file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
             for item in self._database:
-                file.write(self.__write_user_to_str(item))
+                file.write(self._write_user_to_str(item))
 
     def _user_is_find(self, user_id: int) -> dict[int,str] or None:
         for item in self._database:
@@ -137,7 +140,7 @@ class YAML(Database):
         self.__indent = indent
         Database.__init__(self, path, YAML_READ_PATTERN)
 
-    def __write_user_to_str(self, item: dict[int,str]) -> str:
+    def _write_user_to_str(self, item: dict[int,str]) -> str:
         user_data = f'-{" " * (self.__indent-1)}id: {item["id"]}\n'
         user_data += f'{" " * self.__indent}geolocation: {item["geolocation"] if item["geolocation"] else "null"}\n'
         return user_data
@@ -157,11 +160,11 @@ class YAML(Database):
 
     def _append(self, item: dict[int,str]) -> list:
         with open(self._path, "a", encoding="utf-8") as file:
-            file.write(self.__write_user_to_str(item))
+            file.write(self._write_user_to_str(item))
         self._database["users"].append(item)
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
             file.write("users:\n")
             for item in self._database["users"]:
-                file.write(self.__write_user_to_str(item))
+                file.write(self._write_user_to_str(item))
