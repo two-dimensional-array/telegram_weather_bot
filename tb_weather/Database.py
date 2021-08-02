@@ -26,7 +26,7 @@ class Database:
         raise NotImplementedError("Method _write_user_to_str() is`n implemented in child class")
 
     def _user_is_find(self, user_id: int) -> dict[int,str] or None:
-        for item in self._database["users"]:
+        for item in self._database:
             if item["id"] == user_id:
                 return item
         return None
@@ -71,13 +71,13 @@ class JSON(Database):
         return user_data
 
     def _read(self) -> list:
-        database = {'users': []}
+        database = []
         try:
             with open(self._path, "r", encoding="utf-8") as file:
                 for match in self._read_pattern.finditer(file.read()): 
                     id = int(match.group("id"))
                     geolocation = match.group("geolocation")
-                    database["users"].append({"id": id, "geolocation": geolocation })
+                    database.append({"id": id, "geolocation": geolocation })
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
                 file.write(f'{{\n{" "*self.__indent}"users": [\n{" "*self.__indent}]\n}}\n')
@@ -87,12 +87,12 @@ class JSON(Database):
         with open(self._path, "a", encoding="utf-8") as file:
             file.truncate(file.tell()-(8+self.__indent))
             file.write(f',\n{self._write_user_to_str(item)}\n{" "*self.__indent}]\n}}\n')
-        self._database["users"].append(item)
+        self._database.append(item)
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
-            file.write(f'{{\n{" "*self.__indent}"users": [\n{self._write_user_to_str(self._database["users"][0])}')
-            for item in self._database["users"][1:]:
+            file.write(f'{{\n{" "*self.__indent}"users": [\n{self._write_user_to_str(self._database[0])}')
+            for item in self._database[1:]:
                 file.write(f',\n{self._write_user_to_str(item)}')
             file.write(f'\n{" "*self.__indent}]\n}}\n')
 
@@ -129,12 +129,6 @@ class CSV(Database):
             for item in self._database:
                 file.write(self._write_user_to_str(item))
 
-    def _user_is_find(self, user_id: int) -> dict[int,str] or None:
-        for item in self._database:
-            if item["id"] == user_id:
-                return item
-        return None
-
 class YAML(Database):
     def __init__(self, path: str = "users.yaml", indent: int = 2):
         self.__indent = indent
@@ -146,13 +140,13 @@ class YAML(Database):
         return user_data
 
     def _read(self) -> list:
-        database = {'users': []}
+        database = []
         try:
             with open(self._path, "r", encoding="utf-8") as file:
                 for match in self._read_pattern.finditer(file.read()):
                     id = int(match.group("id"))
                     geolocation = match.group("geolocation")
-                    database["users"].append({"id": id, "geolocation": geolocation })
+                    database.append({"id": id, "geolocation": geolocation })
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
                 file.write("users:\n")
@@ -161,10 +155,10 @@ class YAML(Database):
     def _append(self, item: dict[int,str]) -> list:
         with open(self._path, "a", encoding="utf-8") as file:
             file.write(self._write_user_to_str(item))
-        self._database["users"].append(item)
+        self._database.append(item)
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
             file.write("users:\n")
-            for item in self._database["users"]:
+            for item in self._database:
                 file.write(self._write_user_to_str(item))
