@@ -98,6 +98,10 @@ class CSV(Database):
         self.__delimiter = delimiter
         Database.__init__(self, path, CSV_READ_PATTERN)
 
+    def __write_user_to_str(self, item: dict[int,str]) -> str:
+        geolocation = f'"{item["geolocation"]}"\n' if item["geolocation"] else "\n"
+        return f'{item["id"]}{self.__delimiter}{geolocation}'
+
     def _read(self) -> list:
         database = []
         try:
@@ -112,17 +116,15 @@ class CSV(Database):
         return database
 
     def _append(self, item: dict[int,str]) -> None:
-        geolocation = f'"{item["geolocation"]}"\n' if item["geolocation"] else "\n"
         with open(self._path, "a", encoding="utf-8") as file:
-            file.write(f'{item["id"]}{self.__delimiter}{geolocation}')
+            file.write(self.__write_user_to_str(item))
         self._database.append(item)
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
             file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
             for item in self._database:
-                geolocation = f'"{item["geolocation"]}"\n' if item["geolocation"] else "\n"
-                file.write(f'{item["id"]}{self.__delimiter}{geolocation}')
+                file.write(self.__write_user_to_str(item))
 
     def _user_is_find(self, user_id: int) -> dict[int,str] or None:
         for item in self._database:
