@@ -11,6 +11,13 @@ class Database:
     def __init__(self, path: str, read_pattern: str):
         self._path = path
         self._read_pattern = re.compile(read_pattern)
+        if isinstance(self, JSON): pass
+        else:
+            try:
+                self._database = self._read()
+            except:
+                with open(self._path, "w+", encoding="utf-8") as file:
+                    file.write(self._write_header_to_str())
 
     def _read(self) -> list:
         database = []
@@ -106,11 +113,6 @@ class CSV(Database):
     def __init__(self, path: str = "users.csv", delimiter: str = ";"):
         self.__delimiter = delimiter
         Database.__init__(self, path, CSV_READ_PATTERN)
-        try:
-            self._database = self._read()
-        except:
-            with open(self._path, "w+", encoding="utf-8") as file:
-                file.write(self._write_header_to_str())
 
     def _write_header_to_str(self) -> str:
         return f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n'
@@ -123,11 +125,6 @@ class YAML(Database):
     def __init__(self, path: str = "users.yaml", indent: int = 2):
         self.__indent = indent
         Database.__init__(self, path, YAML_READ_PATTERN)
-        try:
-            self._database = self._read()
-        except:
-            with open(self._path, "w+", encoding="utf-8") as file:
-                file.write(self._write_header_to_str())
 
     def _write_header_to_str(self) -> str:
         return "users:\n"
