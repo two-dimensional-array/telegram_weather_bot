@@ -103,7 +103,10 @@ class CSV(Database):
             self._database = self._read()
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
-                file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
+                file.write(self.__write_header_to_str())
+
+    def __write_header_to_str(self):
+        return f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n'
 
     def _write_user_to_str(self, item: dict[int,str]) -> str:
         geolocation = f'"{item["geolocation"]}"\n' if item["geolocation"] else "\n"
@@ -111,7 +114,7 @@ class CSV(Database):
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
-            file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
+            file.write(self.__write_header_to_str())
             for item in self._database:
                 file.write(self._write_user_to_str(item))
 
