@@ -123,7 +123,10 @@ class YAML(Database):
             self._database = self._read()
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
-                file.write("users:\n")
+                file.write(self.__write_header_to_str())
+
+    def __write_header_to_str(self):
+        return "users:\n"
 
     def _write_user_to_str(self, item: dict[int,str]) -> str:
         user_data = f'-{" " * (self.__indent-1)}id: {item["id"]}\n'
@@ -132,6 +135,6 @@ class YAML(Database):
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
-            file.write("users:\n")
+            file.write(self.__write_header_to_str())
             for item in self._database:
                 file.write(self._write_user_to_str(item))
