@@ -27,7 +27,10 @@ class Database:
         self._database.append(item)
 
     def _write_all(self) -> None:
-        raise NotImplementedError("Method _write_all() is`n implemented in child class")
+        with open(self._path, "w+", encoding="utf-8") as file:
+            file.write(self._write_header_to_str())
+            for item in self._database:
+                file.write(self._write_user_to_str(item))
 
     def _write_header_to_str(self) -> str:
         if isinstance(self, JSON): pass
@@ -116,12 +119,6 @@ class CSV(Database):
         geolocation = f'"{item["geolocation"]}"\n' if item["geolocation"] else "\n"
         return f'{item["id"]}{self.__delimiter}{geolocation}'
 
-    def _write_all(self) -> None:
-        with open(self._path, "w+", encoding="utf-8") as file:
-            file.write(self._write_header_to_str())
-            for item in self._database:
-                file.write(self._write_user_to_str(item))
-
 class YAML(Database):
     def __init__(self, path: str = "users.yaml", indent: int = 2):
         self.__indent = indent
@@ -139,9 +136,3 @@ class YAML(Database):
         user_data = f'-{" " * (self.__indent-1)}id: {item["id"]}\n'
         user_data += f'{" " * self.__indent}geolocation: {item["geolocation"] if item["geolocation"] else "null"}\n'
         return user_data
-
-    def _write_all(self) -> None:
-        with open(self._path, "w+", encoding="utf-8") as file:
-            file.write(self._write_header_to_str())
-            for item in self._database:
-                file.write(self._write_user_to_str(item))
