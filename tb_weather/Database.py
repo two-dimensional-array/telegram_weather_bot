@@ -22,7 +22,9 @@ class Database:
         return database
 
     def _append(self, item: dict[int,str]) -> None:
-        raise NotImplementedError("Method _append() is`n implemented in child class")
+        with open(self._path, "a", encoding="utf-8") as file:
+            file.write(self._write_user_to_str(item))
+        self._database.append(item)
 
     def _write_all(self) -> None:
         raise NotImplementedError("Method _write_all() is`n implemented in child class")
@@ -107,11 +109,6 @@ class CSV(Database):
         geolocation = f'"{item["geolocation"]}"\n' if item["geolocation"] else "\n"
         return f'{item["id"]}{self.__delimiter}{geolocation}'
 
-    def _append(self, item: dict[int,str]) -> None:
-        with open(self._path, "a", encoding="utf-8") as file:
-            file.write(self._write_user_to_str(item))
-        self._database.append(item)
-
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
             file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
@@ -132,11 +129,6 @@ class YAML(Database):
         user_data = f'-{" " * (self.__indent-1)}id: {item["id"]}\n'
         user_data += f'{" " * self.__indent}geolocation: {item["geolocation"] if item["geolocation"] else "null"}\n'
         return user_data
-
-    def _append(self, item: dict[int,str]) -> list:
-        with open(self._path, "a", encoding="utf-8") as file:
-            file.write(self._write_user_to_str(item))
-        self._database.append(item)
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
