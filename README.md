@@ -16,7 +16,7 @@ This is simply telegram bot, which show current weather in current place.
   telegram_key = "xxx" #your telegram bot token
   weather_key = "xxx"  #your AccuWeather token
   ```
-- Selection format for saving users data is implemented. For selection format (default format is *[yaml][users.yaml]*) is need open file *[tbweather.py][tbweather.py]* and correct *[6][tbweather.py_l6]* and *[34][tbweather.py_l34]* line in this file.
+- Selection format for saving users data is implemented. For selection format (default format is *[yaml][users.yaml]*) is need open file *[tbweather.py][tbweather.py]* and correct *[6][tbweather.py_l6]* and *[37][tbweather.py_l34]* line in this file.
 
   - For saving users data in *[json format][users.json]* :
   ```python
@@ -70,7 +70,7 @@ This is simply telegram bot, which show current weather in current place.
 [config.py]: https://github.com/two-dimensional-array/telegram_weather_bot/blob/master/tb_weather/config.py
 [tbweather.py]: https://github.com/two-dimensional-array/telegram_weather_bot/blob/master/tb_weather/tbweather.py
 [tbweather.py_l6]: https://github.com/two-dimensional-array/telegram_weather_bot/blob/a1cb244f564033996bc71629d162131804723bc8/tb_weather/tbweather.py#L6
-[tbweather.py_l34]: https://github.com/two-dimensional-array/telegram_weather_bot/blob/a1cb244f564033996bc71629d162131804723bc8/tb_weather/tbweather.py#L34
+[tbweather.py_l37]: https://github.com/two-dimensional-array/telegram_weather_bot/blob/a1cb244f564033996bc71629d162131804723bc8/tb_weather/tbweather.py#L37
 [users.json]: https://github.com/two-dimensional-array/telegram_weather_bot/blob/master/tb_weather/users.json
 [users.csv]: https://github.com/two-dimensional-array/telegram_weather_bot/blob/master/tb_weather/users.csv
 [users.yaml]: https://github.com/two-dimensional-array/telegram_weather_bot/blob/master/tb_weather/users.yaml
