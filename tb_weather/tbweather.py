@@ -32,10 +32,8 @@ config_wether_manager = config.get_default_config()
 config_wether_manager['language'] = 'ru'
 mgr = OWM(weather_key, config=config_wether_manager).weather_manager()
 control_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-control_keyboard.row(BUTTON_PLACE_TEXT, BUTTON_UPDATE_TEXT)
-control_keyboard.row(BUTTON_CURRENT_PLACE_TEXT, BUTTON_HELP_TEXT)
-cancel_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-cancel_keyboard.row(BUTTON_CANCEL_TEXT)
+control_keyboard.keyboard = ((BUTTON_PLACE_TEXT, BUTTON_UPDATE_TEXT),(BUTTON_CURRENT_PLACE_TEXT, BUTTON_HELP_TEXT))
+cancel_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).row(BUTTON_CANCEL_TEXT)
 db = YAML()
 
 @bot.message_handler(content_types=['text'])
