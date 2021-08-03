@@ -11,10 +11,15 @@ class Database:
     def __init__(self, path: str, read_pattern: str):
         self._path = path
         self._read_pattern = re.compile(read_pattern)
-        self._database = self._read()
 
     def _read(self) -> list:
-        raise NotImplementedError("Method _read() is`n implemented in child class")
+        database = []
+        with open(self._path, "r", encoding="utf-8") as file:
+            for match in self._read_pattern.finditer(file.read()): 
+                id = int(match.group("id"))
+                geolocation = match.group("geolocation")
+                database.append({"id": id, "geolocation": geolocation })
+        return database
 
     def _append(self, item: dict[int,str]) -> None:
         raise NotImplementedError("Method _append() is`n implemented in child class")
@@ -61,6 +66,11 @@ class JSON(Database):
     def __init__(self, path: str = "users.json", indent: int = 4):
         self.__indent = indent
         Database.__init__(self, path, JSON_READ_PATTERN)
+        try:
+            self._database = self._read()
+        except:
+            with open(self._path, "w+", encoding="utf-8") as file:
+                file.write(f'{{\n{" "*self.__indent}"users": [\n{" "*self.__indent}]\n}}\n')
 
     def _write_user_to_str(self, item: dict[int,str]) -> str:
         geolocation = f'"{item["geolocation"]}"' if item["geolocation"] else "null"
@@ -69,19 +79,6 @@ class JSON(Database):
         user_data += f'{" "*(self.__indent*3)}"geolocation": {geolocation}\n'
         user_data += f'{" "*(self.__indent*2)}}}'
         return user_data
-
-    def _read(self) -> list:
-        database = []
-        try:
-            with open(self._path, "r", encoding="utf-8") as file:
-                for match in self._read_pattern.finditer(file.read()): 
-                    id = int(match.group("id"))
-                    geolocation = match.group("geolocation")
-                    database.append({"id": id, "geolocation": geolocation })
-        except:
-            with open(self._path, "w+", encoding="utf-8") as file:
-                file.write(f'{{\n{" "*self.__indent}"users": [\n{" "*self.__indent}]\n}}\n')
-        return database
 
     def _append(self, item: dict[int,str]):
         with open(self._path, "a", encoding="utf-8") as file:
@@ -100,23 +97,15 @@ class CSV(Database):
     def __init__(self, path: str = "users.csv", delimiter: str = ";"):
         self.__delimiter = delimiter
         Database.__init__(self, path, CSV_READ_PATTERN)
+        try:
+            self._database = self._read()
+        except:
+            with open(self._path, "w+", encoding="utf-8") as file:
+                file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
 
     def _write_user_to_str(self, item: dict[int,str]) -> str:
         geolocation = f'"{item["geolocation"]}"\n' if item["geolocation"] else "\n"
         return f'{item["id"]}{self.__delimiter}{geolocation}'
-
-    def _read(self) -> list:
-        database = []
-        try:
-            with open(self._path, "r", encoding="utf-8") as file:
-                for match in self._read_pattern.finditer(file.read()):
-                    id = int(match.group("id"))
-                    geolocation = match.group("geolocation")
-                    database.append({"id": id, "geolocation": geolocation })
-        except:
-            with open(self._path, "w+", encoding="utf-8") as file:
-                file.write(f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n')
-        return database
 
     def _append(self, item: dict[int,str]) -> None:
         with open(self._path, "a", encoding="utf-8") as file:
@@ -133,24 +122,16 @@ class YAML(Database):
     def __init__(self, path: str = "users.yaml", indent: int = 2):
         self.__indent = indent
         Database.__init__(self, path, YAML_READ_PATTERN)
+        try:
+            self._database = self._read()
+        except:
+            with open(self._path, "w+", encoding="utf-8") as file:
+                file.write("users:\n")
 
     def _write_user_to_str(self, item: dict[int,str]) -> str:
         user_data = f'-{" " * (self.__indent-1)}id: {item["id"]}\n'
         user_data += f'{" " * self.__indent}geolocation: {item["geolocation"] if item["geolocation"] else "null"}\n'
         return user_data
-
-    def _read(self) -> list:
-        database = []
-        try:
-            with open(self._path, "r", encoding="utf-8") as file:
-                for match in self._read_pattern.finditer(file.read()):
-                    id = int(match.group("id"))
-                    geolocation = match.group("geolocation")
-                    database.append({"id": id, "geolocation": geolocation })
-        except:
-            with open(self._path, "w+", encoding="utf-8") as file:
-                file.write("users:\n")
-        return database
 
     def _append(self, item: dict[int,str]) -> list:
         with open(self._path, "a", encoding="utf-8") as file:
