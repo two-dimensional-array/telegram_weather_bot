@@ -29,6 +29,10 @@ class Database:
     def _write_all(self) -> None:
         raise NotImplementedError("Method _write_all() is`n implemented in child class")
 
+    def _write_header_to_str(self) -> str:
+        if isinstance(self, JSON): pass
+        else: raise NotImplementedError("Method _write_header_to_str() is`n implemented in child class")
+
     def _write_user_to_str(self, item: dict[int,str]) -> str:
         raise NotImplementedError("Method _write_user_to_str() is`n implemented in child class")
 
@@ -103,9 +107,9 @@ class CSV(Database):
             self._database = self._read()
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
-                file.write(self.__write_header_to_str())
+                file.write(self._write_header_to_str())
 
-    def __write_header_to_str(self):
+    def _write_header_to_str(self) -> str:
         return f'{CSV_FILE_HEADER[0]}{self.__delimiter}{CSV_FILE_HEADER[1]}\n'
 
     def _write_user_to_str(self, item: dict[int,str]) -> str:
@@ -114,7 +118,7 @@ class CSV(Database):
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
-            file.write(self.__write_header_to_str())
+            file.write(self._write_header_to_str())
             for item in self._database:
                 file.write(self._write_user_to_str(item))
 
@@ -126,9 +130,9 @@ class YAML(Database):
             self._database = self._read()
         except:
             with open(self._path, "w+", encoding="utf-8") as file:
-                file.write(self.__write_header_to_str())
+                file.write(self._write_header_to_str())
 
-    def __write_header_to_str(self):
+    def _write_header_to_str(self) -> str:
         return "users:\n"
 
     def _write_user_to_str(self, item: dict[int,str]) -> str:
@@ -138,6 +142,6 @@ class YAML(Database):
 
     def _write_all(self) -> None:
         with open(self._path, "w+", encoding="utf-8") as file:
-            file.write(self.__write_header_to_str())
+            file.write(self._write_header_to_str())
             for item in self._database:
                 file.write(self._write_user_to_str(item))
