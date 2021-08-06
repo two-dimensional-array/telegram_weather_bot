@@ -1,4 +1,5 @@
 import re
+from typing import Text
 
 CSV_FILE_HEADER = "id","geolocation"
 DEFAULT_GEOLOCATION = "Город не задан" 
@@ -15,18 +16,14 @@ class Database:
         else:
             try:
                 self._database = self._read()
+                print(self._database)
             except:
                 with open(self._path, "w+", encoding="utf-8") as file:
                     file.write(self._write_header_to_str())
 
     def _read(self) -> list:
-        database = []
-        with open(self._path, "r", encoding="utf-8") as file:
-            for match in self._read_pattern.finditer(file.read()): 
-                id = int(match.group("id"))
-                geolocation = match.group("geolocation")
-                database.append({"id": id, "geolocation": geolocation })
-        return database
+        with open(self._path, "r", encoding="utf-8") as file: text = file.read()
+        return [{"id":int(match.group("id")),"geolocation":match.group("geolocation")} for match in self._read_pattern.finditer(text)]
 
     def _append(self, item: dict[int,str]) -> None:
         with open(self._path, "a", encoding="utf-8") as file:
